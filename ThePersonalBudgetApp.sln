@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35219.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThePersonalBudgetApp", "ThePersonalBudgetApp\ThePersonalBudgetApp.csproj", "{67EF1DB1-954D-496A-9760-4A1D3813D1FB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4721FF9F-37F1-4232-A9C0-F099BDF3531B} = {4721FF9F-37F1-4232-A9C0-F099BDF3531B}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThePersonalBudgetApp.Core", "ThePersonalBudgetApp.Core\ThePersonalBudgetApp.Core.csproj", "{4721FF9F-37F1-4232-A9C0-F099BDF3531B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67EF1DB1-954D-496A-9760-4A1D3813D1FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67EF1DB1-954D-496A-9760-4A1D3813D1FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67EF1DB1-954D-496A-9760-4A1D3813D1FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67EF1DB1-954D-496A-9760-4A1D3813D1FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4721FF9F-37F1-4232-A9C0-F099BDF3531B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4721FF9F-37F1-4232-A9C0-F099BDF3531B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4721FF9F-37F1-4232-A9C0-F099BDF3531B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4721FF9F-37F1-4232-A9C0-F099BDF3531B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54C7F05D-EF27-4FAD-9AE3-0BFC75030904}
+	EndGlobalSection
+EndGlobal

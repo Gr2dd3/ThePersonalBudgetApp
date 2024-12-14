@@ -1,0 +1,51 @@
+# User-specific files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Auto-generated files
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+*.log
+
+# Build results
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+*.config
+*.ide
+
+# Web-specific files
+wwwroot/lib/
+node_modules/
+bower_components/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Database and debug settings
+*.mdf
+*.ldf
+*.vscode
+*.sqlite
+*.sqlite3
