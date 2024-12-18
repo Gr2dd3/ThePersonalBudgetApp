@@ -1,6 +1,4 @@
-﻿using ThePersonalBudgetApp.Context;
-
-namespace ThePersonalBudgetApp.DAL.Managers;
+﻿namespace ThePersonalBudgetApp.DAL.Managers;
 
 public class BudgetManager
 {

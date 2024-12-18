@@ -1,6 +1,3 @@
-using Microsoft.Extensions.Configuration;
-using ThePersonalBudgetApp.Context;
-
 namespace ThePersonalBudgetApp;
 
 public class Program
@@ -11,6 +8,7 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddRazorPages();
+        builder.Services.AddTransient<BudgetManager>();
 
         builder.Services.AddDbContext<BudgetDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
