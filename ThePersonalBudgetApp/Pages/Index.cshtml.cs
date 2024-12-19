@@ -1,28 +1,3 @@
-
-
-//namespace ThePersonalBudgetApp.Pages;
-
-//public class IndexModel : PageModel
-//{
-//    private readonly ILogger<IndexModel> _logger;
-
-//    [BindProperty]
-//    Budget Budget { get; set; }
-
-//    BudgetManager _budgetManager;
-
-//    public IndexModel(ILogger<IndexModel> logger, BudgetManager budgetManager)
-//    {
-//        _logger = logger;
-//        _budgetManager = budgetManager;
-//    }
-
-//    public void OnGet()
-//    {
-
-//    }
-//}
-
 namespace ThePersonalBudgetApp.Pages;
 
 public class IndexModel : PageModel
@@ -34,9 +9,10 @@ public class IndexModel : PageModel
     {
         if (Budget.Title == null)
         {
-            Budget.Title = "My Budget";
-            Budget.Description = "Example description";
+            Budget.Title = "Min Budget";
+            Budget.Description = "Beskrivning";
         }
+
     }
 
     public IActionResult OnPost()

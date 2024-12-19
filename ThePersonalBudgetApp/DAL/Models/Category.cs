@@ -8,11 +8,11 @@
 
         public virtual Guid IncomeBudgetId { get; set; }
         public virtual Guid ExpenseBudgetId { get; set; }
-        public virtual ICollection<Item> Items { get; set; }
+        public virtual List<Item> Items { get; set; }
 
         public Category()
         {
-            Items = new HashSet<Item>();
+            Items = new List<Item>();
         }
 
         public void UpdateTotalAmount()
