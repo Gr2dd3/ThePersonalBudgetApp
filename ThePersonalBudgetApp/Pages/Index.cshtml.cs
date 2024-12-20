@@ -1,3 +1,4 @@
+
 namespace ThePersonalBudgetApp.Pages;
 
 public class IndexModel : PageModel
@@ -5,8 +6,16 @@ public class IndexModel : PageModel
     [BindProperty]
     public Budget Budget { get; set; } = new Budget();
 
+    private IBudgetManager _budgetManager;
+
+    public IndexModel(IBudgetManager budgetManager)
+    {
+        _budgetManager = budgetManager;
+    }
+
     public void OnGet()
     {
+        //TODO: Create menu that lets you choose among budgets to fetch or delete or new
         if (Budget.Title == null)
         {
             Budget.Title = "Min Budget";
@@ -15,7 +24,7 @@ public class IndexModel : PageModel
 
     }
 
-    public IActionResult OnPost()
+    public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
         {
@@ -23,6 +32,7 @@ public class IndexModel : PageModel
         }
 
         // Handle the budget data here
+        await _budgetManager.SaveBudgetAsync(Budget);
         // Example: Send Budget to BudgetManager
         TempData["Message"] = "Budget saved successfully!";
         return RedirectToPage();
