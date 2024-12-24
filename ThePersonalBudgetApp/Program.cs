@@ -8,11 +8,11 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddRazorPages();
-        builder.Services.AddTransient<BudgetManager>();
 
         builder.Services.AddDbContext<BudgetDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+        builder.Services.AddTransient<IBudgetManager, BudgetManager>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
