@@ -2,3 +2,8 @@
 @model ThePersonalBudgetApp.Pages.WorkOnBudgetModel
 @{
 }
+
+@if (!Model.IsWorkingOnBudget)
+{ 
+    <h3>Choose Budget to work with:</h3>
+}

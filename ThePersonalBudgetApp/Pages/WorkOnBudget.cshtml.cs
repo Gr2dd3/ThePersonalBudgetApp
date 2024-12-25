@@ -1,12 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+namespace ThePersonalBudgetApp.Pages;
 
-namespace ThePersonalBudgetApp.Pages
+public class WorkOnBudgetModel : PageModel
 {
-    public class WorkOnBudgetModel : PageModel
+    [BindProperty]
+    public bool IsWorkingOnBudget { get; set; } = false;
+    public void OnGet()
     {
-        public void OnGet()
-        {
-        }
     }
 }

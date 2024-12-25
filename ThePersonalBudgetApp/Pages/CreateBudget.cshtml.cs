@@ -17,7 +17,7 @@ namespace ThePersonalBudgetApp.Pages
 
         public void OnGet()
         {
-            //TODO: Create menu that lets you choose among budgets to fetch or delete or new
+            
             if (Budget.Title == null)
             {
                 Budget.Title = "Min Budget";
