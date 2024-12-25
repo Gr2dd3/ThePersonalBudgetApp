@@ -5,4 +5,11 @@
 }
 <h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div>
+    <p>
+        <b>Name:</b> @HttpContext.Session.GetString("_Name");<b>
+            Age:
+
+        </b> @HttpContext.Session.GetInt32("_Age").ToString()
+    </p>
+</div>

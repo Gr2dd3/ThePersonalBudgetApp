@@ -14,12 +14,18 @@ public class WorkOnBudgetModel : PageModel
 
     public Budget? SelectedBudget { get; private set; }
 
-    public async Task OnGet()
+    public async Task OnGetAsync()
     {
-        Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
+        Budgets = HttpContext.Session.Get<List<Budget>>("Budgets");
+
+        if (Budgets is null || !Budgets.Any())
+        { 
+            Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
+            HttpContext.Session.Set("Budgets", Budgets);
+        }
     }
 
-    public async Task OnPost()
+    public async Task OnPostAsync()
     {
         if (Request.Form["action"] == "back")
         {

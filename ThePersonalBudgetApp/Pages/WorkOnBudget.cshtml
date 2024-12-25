@@ -1,6 +1,7 @@
 ﻿@page
 @model ThePersonalBudgetApp.Pages.WorkOnBudgetModel
 @{
+    await Model.OnGetAsync();
 }
 
 @if (!Model.IsWorkingOnBudget)
@@ -17,6 +18,8 @@
             </li>
         }
     </ul>
+
+    <h5>Eller välj att <a asp-page="/CreateBudget">SKAPA NY BUDGET</a></h5>
 }
 else
 {
