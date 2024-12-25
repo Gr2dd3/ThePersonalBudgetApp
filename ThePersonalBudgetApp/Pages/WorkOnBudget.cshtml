@@ -4,6 +4,27 @@
 }
 
 @if (!Model.IsWorkingOnBudget)
-{ 
+{
     <h3>Choose Budget to work with:</h3>
+    <ul>
+        @foreach (var budget in Model.Budgets)
+        {
+            <li>
+                <form method="post">
+                    <input type="hidden" name="selectedBudgetId" value="@budget.Id" />
+                    <button type="submit" class="btn btn-link">@budget.Title</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
+else
+{
+<h3>@Model.SelectedBudget?.Title</h3>
+
+<!-- return to list of budgets -->
+<form method="post">
+    <input type="hidden" name="action" value="back" />
+    <button type="submit" class="btn btn-secondary">Back to budget list</button>
+</form>
 }

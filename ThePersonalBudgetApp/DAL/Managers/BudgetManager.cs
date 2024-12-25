@@ -53,6 +53,22 @@ public class BudgetManager : IBudgetManager
         return budget;
     }
 
+    public async Task<List<Budget>> FetchAllBudgetsAsync()
+    {
+        var budgets = await _context.Budgets
+            .Include(b => b.Incomes)
+                .ThenInclude(i => i.Items)
+            .Include(b => b.Expenses)
+                .ThenInclude(e => e.Items)
+            .ToListAsync();
+
+        if (budgets == null)
+        {
+            throw new Exception($"Budgets not found");
+        }
+        return budgets;
+    }
+
     public async Task PrintPDFAsync(Budget budget)
     {
         if (budget == null)
