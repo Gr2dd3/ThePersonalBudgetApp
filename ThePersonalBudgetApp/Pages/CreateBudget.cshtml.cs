@@ -26,6 +26,7 @@ namespace ThePersonalBudgetApp.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
+            //TODO: Kolla datan som skickas tillbaka och sparas för ny budget. Den hämtas inte riktigt just nu till att arbeta med.
             if (!ModelState.IsValid)
             {
                 return Page();
