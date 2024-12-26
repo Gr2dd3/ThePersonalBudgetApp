@@ -32,7 +32,7 @@ public class BudgetManager : IBudgetManager
         }
     }
 
-    public async Task DeleteBudgetAsync(Guid budgetId)
+    public async Task DeleteBudgetAsync(System.Guid budgetId)
     {
         var budget = await _context.Budgets.FindAsync(budgetId);
         if (budget == null)
@@ -44,7 +44,7 @@ public class BudgetManager : IBudgetManager
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Budget> FetchBudgetAsync(Guid budgetId)
+    public async Task<Budget> FetchBudgetAsync(System.Guid budgetId)
     {
         var budget = await _context.Budgets
             .Include(b => b.Incomes)

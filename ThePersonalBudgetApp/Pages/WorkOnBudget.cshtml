@@ -7,17 +7,30 @@
 @if (!Model.IsWorkingOnBudget)
 {
     <h3>Choose Budget to work with:</h3>
-    <ul>
-        @foreach (var budget in Model.Budgets)
-        {
-            <li>
-                <form method="post">
-                    <input type="hidden" name="selectedBudgetId" value="@budget.Id" />
-                    <button type="submit" class="btn btn-link">@budget.Title</button>
-                </form>
-            </li>
-        }
-    </ul>
+    @if (Model.Budgets is not null || !Model.Budgets!.Any())
+    {
+        <ul>
+            @foreach (var budget in Model.Budgets!)
+            {
+                <li class="budget-item">
+                    <form method="post">
+                        <input type="hidden" name="selectedBudgetId" value="@budget.Id" />
+                        <button type="submit" class="btn btn-link">@budget.Title</button>
+                    </form>
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="deleteBudgetId" value="@budget.Id" />
+                        <button type="submit" class="btn btn-link" onclick="return confirm('Are you sure you want to delete this budget?')">
+                            <img src="~/img/delete_sticker.png" alt="Delete" />
+                        </button>
+                    </form>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <h3>Budgets can not load..</h3>
+    }
 
     <h5>Eller välj att <a asp-page="/CreateBudget">SKAPA NY BUDGET</a></h5>
 }
@@ -26,7 +39,7 @@ else
     <!--Work on Selected Budget-->
     @if (Model.SelectedBudget is not null)
     {
-        <form method="post" name="SelectedBudget">
+        <form method="post" asp-page-handler="SelectedBudget">
             <div>
                 <label>Title:</label>
                 <input asp-for="SelectedBudget!.Title" />
@@ -90,11 +103,11 @@ else
         <h1>Something went wrong...</h1>
     }
 
-<!-- return to list of budgets -->
-<form method="post">
-    <input type="hidden" name="action" value="back" />
-    <button type="submit" class="btn btn-secondary">Back to budget list</button>
-</form>
+    <!-- return to list of budgets -->
+    <form method="post">
+        <input type="hidden" name="action" value="back" />
+        <button type="submit" class="btn btn-secondary">Back to budget list</button>
+    </form>
 }
 
 <!-- TODO: Display total (or chart) and Add calculator here -->

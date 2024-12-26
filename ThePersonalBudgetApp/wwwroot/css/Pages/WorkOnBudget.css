@@ -1,0 +1,13 @@
+﻿.budget-item {
+    display: flex;
+    align-items: center;
+}
+
+.budget-item form {
+    margin: 0;
+}
+
+.budget-item button {
+    padding: 0;
+    margin-right: 10px;
+}

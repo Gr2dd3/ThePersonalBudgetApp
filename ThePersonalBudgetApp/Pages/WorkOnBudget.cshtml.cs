@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace ThePersonalBudgetApp.Pages;
 
 public class WorkOnBudgetModel : PageModel
@@ -12,14 +14,14 @@ public class WorkOnBudgetModel : PageModel
     public bool IsWorkingOnBudget { get; set; }
     public List<Budget>? Budgets { get; set; }
 
-    public Budget? SelectedBudget { get; private set; }
+    public Budget? SelectedBudget { get; set; }
 
     public async Task OnGetAsync()
     {
         Budgets = HttpContext.Session.Get<List<Budget>>("Budgets");
 
         if (Budgets is null || !Budgets.Any())
-        { 
+        {
             Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
             HttpContext.Session.Set("Budgets", Budgets);
         }
@@ -42,17 +44,24 @@ public class WorkOnBudgetModel : PageModel
         }
     }
 
-    public async Task<IActionResult> OnSelectedBudgetAsync()
+    public async Task<IActionResult> OnPostSelectedBudgetAsync()
     {
         if (!ModelState.IsValid)
         {
             return Page();
         }
 
-        // Handle the budget data here
-        await _iBudgetManager.SaveBudgetAsync(SelectedBudget);
-        // Example: Send Budget to BudgetManager
-        TempData["Message"] = "Budget saved successfully!";
+        if (SelectedBudget is not null)
+            await _iBudgetManager.SaveBudgetAsync(SelectedBudget);
+
         return RedirectToPage();
+    }
+
+    public async Task OnPostDeleteAsync()
+    {
+        if (Guid.TryParse(Request.Form["deleteBudgetId"], out Guid deleteBudgetId))
+        {
+            await _iBudgetManager.DeleteBudgetAsync(deleteBudgetId);
+        }
     }
 }
