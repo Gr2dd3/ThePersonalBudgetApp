@@ -14,7 +14,16 @@ public class BudgetManager : IBudgetManager
             throw new ArgumentNullException(nameof(budget), "Budget cannot be null");
         try
         {
-            await _context.Budgets.AddAsync(budget);
+            var existingBudget = await _context.Budgets.FindAsync(budget.Id);
+            if (existingBudget is not null)
+            {
+                _context.Entry(existingBudget).CurrentValues.SetValues(budget);
+            }
+            else
+            {
+                await _context.Budgets.AddAsync(budget);
+            }
+
             await _context.SaveChangesAsync();
         }
         catch (Exception ex)
@@ -23,7 +32,6 @@ public class BudgetManager : IBudgetManager
         }
     }
 
-    //TODO
     public async Task DeleteBudgetAsync(Guid budgetId)
     {
         var budget = await _context.Budgets.FindAsync(budgetId);
@@ -69,7 +77,7 @@ public class BudgetManager : IBudgetManager
         return budgets;
     }
 
-    public async Task PrintPDFAsync(Budget budget)
+    public void PrintPDF(Budget budget)
     {
         if (budget == null)
             throw new ArgumentNullException(nameof(budget), "Budget cannot be null");

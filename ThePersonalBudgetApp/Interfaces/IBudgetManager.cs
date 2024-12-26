@@ -6,5 +6,5 @@ public interface IBudgetManager
     Task DeleteBudgetAsync(Guid budgetId);
     Task<Budget> FetchBudgetAsync(Guid budgetId);
     Task<List<Budget>> FetchAllBudgetsAsync();
-    Task PrintPDFAsync(Budget budget);
+    void PrintPDF(Budget budget);
 }

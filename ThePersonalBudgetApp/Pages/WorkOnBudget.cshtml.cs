@@ -41,4 +41,18 @@ public class WorkOnBudgetModel : PageModel
             }
         }
     }
+
+    public async Task<IActionResult> OnSelectedBudgetAsync()
+    {
+        if (!ModelState.IsValid)
+        {
+            return Page();
+        }
+
+        // Handle the budget data here
+        await _iBudgetManager.SaveBudgetAsync(SelectedBudget);
+        // Example: Send Budget to BudgetManager
+        TempData["Message"] = "Budget saved successfully!";
+        return RedirectToPage();
+    }
 }

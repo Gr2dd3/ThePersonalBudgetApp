@@ -23,7 +23,72 @@
 }
 else
 {
-<h3>@Model.SelectedBudget?.Title</h3>
+    <!--Work on Selected Budget-->
+    @if (Model.SelectedBudget is not null)
+    {
+        <form method="post" name="SelectedBudget">
+            <div>
+                <label>Title:</label>
+                <input asp-for="SelectedBudget!.Title" />
+            </div>
+            <div>
+                <label>Description:</label>
+                <textarea asp-for="SelectedBudget!.Description"></textarea>
+            </div>
+
+            <h2>Incomes</h2>
+            <div id="incomes-container">
+                @for (int i = 0; i < Model.SelectedBudget.Incomes.Count; i++)
+                {
+                    <div>
+                        <input asp-for="SelectedBudget!.Incomes[i].Name" placeholder="Category Name" />
+                        <button type="button" onclick="removeCategory('income', @i)">Remove</button>
+                        <ul id="income-items-@i">
+                            @for (int j = 0; j < Model.SelectedBudget.Incomes[i].Items.Count; j++)
+                            {
+                                <li>
+                                    <input asp-for="SelectedBudget!.Incomes[i].Items[j].Name" placeholder="Item Name" />
+                                    <input asp-for="SelectedBudget!.Incomes[i].Items[j].Amount" placeholder="Amount" />
+                                    <button type="button" onclick="removeItem('income', @i, @j)">Remove</button>
+                                </li>
+                            }
+                        </ul>
+                        <button type="button" onclick="addItem('income', @i)">Add Item</button>
+                    </div>
+                }
+            </div>
+            <button type="button" onclick="addCategory('income')">Add Income Category</button>
+
+            <h2>Expenses</h2>
+            <div id="expenses-container">
+                @for (int i = 0; i < Model.SelectedBudget.Expenses.Count; i++)
+                {
+                    <div>
+                        <input asp-for="SelectedBudget!.Expenses[i].Name" placeholder="Category Name" />
+                        <button type="button" onclick="removeCategory('expense', @i)">Remove</button>
+                        <ul id="expense-items-@i">
+                            @for (int j = 0; j < Model.SelectedBudget.Expenses[i].Items.Count; j++)
+                            {
+                                <li>
+                                    <input asp-for="SelectedBudget!.Expenses[i].Items[j].Name" placeholder="Item Name" />
+                                    <input asp-for="SelectedBudget!.Expenses[i].Items[j].Amount" placeholder="Amount" />
+                                    <button type="button" onclick="removeItem('expense', @i, @j)">Remove</button>
+                                </li>
+                            }
+                        </ul>
+                        <button type="button" onclick="addItem('expense', @i)">Add Item</button>
+                    </div>
+                }
+            </div>
+            <button type="button" onclick="addCategory('expense')">Add Expense Category</button>
+
+            <button type="submit">Save Budget</button>
+        </form>
+    }
+    else
+    {
+        <h1>Something went wrong...</h1>
+    }
 
 <!-- return to list of budgets -->
 <form method="post">
