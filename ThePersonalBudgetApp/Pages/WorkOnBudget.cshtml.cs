@@ -18,13 +18,14 @@ public class WorkOnBudgetModel : PageModel
 
     public async Task OnGetAsync()
     {
-        Budgets = HttpContext.Session.Get<List<Budget>>("Budgets");
+        //Budgets = HttpContext.Session.Get<List<Budget>>("Budgets");
 
-        if (Budgets is null || !Budgets.Any())
-        {
-            Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
-            HttpContext.Session.Set("Budgets", Budgets);
-        }
+        Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
+        //if (Budgets is null || !Budgets.Any())
+        //{
+        //    Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
+        //    HttpContext.Session.Set("Budgets", Budgets);
+        //}
     }
 
     public async Task OnPostAsync()

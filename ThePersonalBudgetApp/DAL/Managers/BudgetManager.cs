@@ -12,25 +12,73 @@ public class BudgetManager : IBudgetManager
     {
         if (budget == null)
             throw new ArgumentNullException(nameof(budget), "Budget cannot be null");
+
         try
         {
-            var existingBudget = await _context.Budgets.FindAsync(budget.Id);
-            if (existingBudget is not null)
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                _context.Entry(existingBudget).CurrentValues.SetValues(budget);
-            }
-            else
-            {
-                await _context.Budgets.AddAsync(budget);
-            }
+                try
+                {
+                    var existingBudget = await _context.Budgets.FindAsync(budget.Id);
+                    if (existingBudget != null)
+                        _context.Budgets.Update(budget);
+                    else
+                        await _context.Budgets.AddAsync(budget);
 
-            await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
+
+                    var budgetId = budget.Id;
+
+                    foreach (var category in budget.Incomes.Concat(budget.Expenses))
+                    {
+                        category.BudgetId = budgetId;
+
+                        var existingCategory = await _context.Categories
+                            .FirstOrDefaultAsync(c => c.Id == category.Id);
+                        if (existingCategory != null)
+                        {
+                            _context.Categories.Update(category);
+                        }
+                        else
+                        {
+                            await _context.Categories.AddAsync(category);
+                        }
+
+                        foreach (var item in category.Items)
+                        {
+                            item.CategoryId = category.Id;
+
+                            var existingItem = await _context.Items
+                                .FirstOrDefaultAsync(i => i.Id == item.Id);
+                            if (existingItem != null)
+                            {
+                                _context.Items.Update(item);
+                            }
+                            else
+                            {
+                                await _context.Items.AddAsync(item);
+                            }
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw new Exception("An error occurred while saving the budget and its related data.", ex);
+                }
+            }
         }
         catch (Exception ex)
         {
             throw new Exception("An error occurred while saving the budget.", ex);
         }
     }
+
+
 
     public async Task DeleteBudgetAsync(System.Guid budgetId)
     {
@@ -44,13 +92,13 @@ public class BudgetManager : IBudgetManager
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Budget> FetchBudgetAsync(System.Guid budgetId)
+    public async Task<Budget> FetchBudgetAsync(Guid budgetId)
     {
         var budget = await _context.Budgets
             .Include(b => b.Incomes)
-                .ThenInclude(i => i.Items)
+                .ThenInclude(c => c.Items)
             .Include(b => b.Expenses)
-                .ThenInclude(e => e.Items)
+                .ThenInclude(c => c.Items)
             .FirstOrDefaultAsync(b => b.Id == budgetId);
 
         if (budget == null)
@@ -61,6 +109,7 @@ public class BudgetManager : IBudgetManager
         return budget;
     }
 
+
     public async Task<List<Budget>> FetchAllBudgetsAsync()
     {
         var budgets = await _context.Budgets
@@ -70,9 +119,9 @@ public class BudgetManager : IBudgetManager
                 .ThenInclude(e => e.Items)
             .ToListAsync();
 
-        if (budgets == null)
+        if (budgets == null || !budgets.Any())
         {
-            throw new Exception($"Budgets not found");
+            throw new Exception("No budgets found.");
         }
         return budgets;
     }

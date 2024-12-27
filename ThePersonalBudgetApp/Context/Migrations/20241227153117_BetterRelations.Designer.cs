@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ThePersonalBudgetApp.Context;
 
@@ -11,9 +12,11 @@ using ThePersonalBudgetApp.Context;
 namespace ThePersonalBudgetApp.Migrations
 {
     [DbContext(typeof(BudgetDbContext))]
-    partial class BudgetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241227153117_BetterRelations")]
+    partial class BetterRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,7 +48,7 @@ namespace ThePersonalBudgetApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("BudgetId")
+                    b.Property<Guid>("BudgetId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("BudgetId1")
@@ -55,6 +58,7 @@ namespace ThePersonalBudgetApp.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<float>("TotalAmount")
@@ -78,7 +82,7 @@ namespace ThePersonalBudgetApp.Migrations
                     b.Property<float>("Amount")
                         .HasColumnType("real");
 
-                    b.Property<Guid?>("CategoryId")
+                    b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -95,7 +99,9 @@ namespace ThePersonalBudgetApp.Migrations
                 {
                     b.HasOne("ThePersonalBudgetApp.DAL.Models.Budget", "Budget")
                         .WithMany("Incomes")
-                        .HasForeignKey("BudgetId");
+                        .HasForeignKey("BudgetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ThePersonalBudgetApp.DAL.Models.Budget", null)
                         .WithMany("Expenses")
@@ -108,7 +114,9 @@ namespace ThePersonalBudgetApp.Migrations
                 {
                     b.HasOne("ThePersonalBudgetApp.DAL.Models.Category", "Category")
                         .WithMany("Items")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
                 });
