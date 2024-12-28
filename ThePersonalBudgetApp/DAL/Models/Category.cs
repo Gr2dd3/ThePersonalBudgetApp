@@ -16,7 +16,8 @@ public class Category
 
     public void UpdateTotalAmount()
     {
-        TotalAmount = Items.Sum(i => i.Amount);
+        if (Items != null && Items.Count > 0)
+            TotalAmount = Items.Sum(i => i.Amount);
     }
 }
 

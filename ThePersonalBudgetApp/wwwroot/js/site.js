@@ -1,5 +1,4 @@
-﻿// Funktion för att lägga till en ny kategori
-function addCategory(type) {
+﻿function addCategory(type) {
     const container = document.querySelector(type === 'income' ? '#incomes-container' : '#expenses-container');
     const index = container.children.length;
 
@@ -15,7 +14,6 @@ function addCategory(type) {
     container.insertAdjacentHTML('beforeend', categoryHtml);
 }
 
-// Funktion för att ta bort en kategori
 function removeCategory(type, index) {
     const container = document.querySelector(type === 'income' ? '#incomes-container' : '#expenses-container');
     const category = container.children[index];
@@ -24,7 +22,6 @@ function removeCategory(type, index) {
     }
 }
 
-// Funktion för att lägga till en ny item i en kategori
 function addItem(type, categoryIndex) {
     const itemList = document.querySelector(`#${type}-items-${categoryIndex}`);
     if (!itemList) return;
@@ -40,7 +37,6 @@ function addItem(type, categoryIndex) {
     itemList.insertAdjacentHTML('beforeend', itemHtml);
 }
 
-// Funktion för att ta bort ett item
 function removeItem(type, categoryIndex, itemIndex) {
     const itemList = document.querySelector(`#${type}-items-${categoryIndex}`);
     const item = itemList.children[itemIndex];

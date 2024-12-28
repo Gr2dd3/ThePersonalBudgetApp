@@ -94,12 +94,14 @@ public class BudgetManager : IBudgetManager
 
     public async Task<Budget> FetchBudgetAsync(Guid budgetId)
     {
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
         var budget = await _context.Budgets
             .Include(b => b.Incomes)
                 .ThenInclude(c => c.Items)
             .Include(b => b.Expenses)
                 .ThenInclude(c => c.Items)
             .FirstOrDefaultAsync(b => b.Id == budgetId);
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
         if (budget == null)
         {
