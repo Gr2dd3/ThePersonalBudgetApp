@@ -82,7 +82,8 @@ public class BudgetManager : IBudgetManager
 
     public async Task DeleteBudgetAsync(System.Guid budgetId)
     {
-        var budget = await _context.Budgets.FindAsync(budgetId);
+        //var budget = await _context.Budgets.FindAsync(budgetId);
+        var budget = await FetchBudgetAsync(budgetId);
         if (budget == null)
         {
             throw new KeyNotFoundException($"Budget with ID {budgetId} not found.");
