@@ -14,6 +14,7 @@
     container.insertAdjacentHTML('beforeend', categoryHtml);
 }
 
+// TODO: Kolla att removeCategory tar bort rätt index
 function removeCategory(type, index) {
     const container = document.querySelector(type === 'income' ? '#incomes-container' : '#expenses-container');
     const category = container.children[index];

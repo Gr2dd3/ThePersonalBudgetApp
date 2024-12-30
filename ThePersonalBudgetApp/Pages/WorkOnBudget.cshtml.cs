@@ -14,6 +14,7 @@ public class WorkOnBudgetModel : PageModel
     public bool IsWorkingOnBudget { get; set; }
     public List<Budget>? Budgets { get; set; }
 
+    [BindProperty]
     public Budget? SelectedBudget { get; set; }
 
     public async Task OnGetAsync()
@@ -35,11 +36,16 @@ public class WorkOnBudgetModel : PageModel
             IsWorkingOnBudget = false;
             SelectedBudget = null;
         }
+        else if (Request.Form["handler"] == "SelectedBudget")
+        {
+            await OnPostSelectedBudgetAsync();
+        }
         else
         {
             if (Guid.TryParse(Request.Form["selectedBudgetId"], out Guid budgetId))
             {
                 SelectedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
+                HttpContext.Session.Set("SelectedBudgetId", SelectedBudget.Id.ToByteArray());
                 IsWorkingOnBudget = true;
             }
         }
@@ -53,7 +59,15 @@ public class WorkOnBudgetModel : PageModel
         }
 
         if (SelectedBudget is not null)
+        {
+            var budgetId = HttpContext.Session.Get("SelectedBudgetId");
+            if (budgetId != null && budgetId.Length == 16)
+            {
+                SelectedBudget.Id = new Guid(budgetId);
+            }
+
             await _iBudgetManager.SaveBudgetAsync(SelectedBudget);
+        }
 
         return RedirectToPage();
     }

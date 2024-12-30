@@ -1,4 +1,6 @@
-﻿namespace ThePersonalBudgetApp.DAL.Managers;
+﻿using ThePersonalBudgetApp.DAL.Models;
+
+namespace ThePersonalBudgetApp.DAL.Managers;
 
 public class BudgetManager : IBudgetManager
 {
@@ -7,7 +9,7 @@ public class BudgetManager : IBudgetManager
     {
         _context = context;
     }
-
+    // TODO: Se till att existerande budget sparar ordentligt. 
     public async Task SaveBudgetAsync(Budget budget)
     {
         if (budget == null)
@@ -15,61 +17,20 @@ public class BudgetManager : IBudgetManager
 
         try
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            var existingBudget = await _context.Budgets
+                .Include(b => b.Incomes)
+                .ThenInclude(c => c.Items)
+                .Include(b => b.Expenses)
+                .ThenInclude(c => c.Items)
+                .FirstOrDefaultAsync(b => b.Id == budget.Id);
+
+            if (existingBudget != null)
             {
-                try
-                {
-                    var existingBudget = await _context.Budgets.FindAsync(budget.Id);
-                    if (existingBudget != null)
-                        _context.Budgets.Update(budget);
-                    else
-                        await _context.Budgets.AddAsync(budget);
-
-                    await _context.SaveChangesAsync();
-
-                    var budgetId = budget.Id;
-
-                    foreach (var category in budget.Incomes.Concat(budget.Expenses))
-                    {
-                        category.BudgetId = budgetId;
-
-                        var existingCategory = await _context.Categories
-                            .FirstOrDefaultAsync(c => c.Id == category.Id);
-                        if (existingCategory != null)
-                        {
-                            _context.Categories.Update(category);
-                        }
-                        else
-                        {
-                            await _context.Categories.AddAsync(category);
-                        }
-
-                        foreach (var item in category.Items)
-                        {
-                            item.CategoryId = category.Id;
-
-                            var existingItem = await _context.Items
-                                .FirstOrDefaultAsync(i => i.Id == item.Id);
-                            if (existingItem != null)
-                            {
-                                _context.Items.Update(item);
-                            }
-                            else
-                            {
-                                await _context.Items.AddAsync(item);
-                            }
-                        }
-                    }
-
-                    await _context.SaveChangesAsync();
-
-                    await transaction.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    throw new Exception("An error occurred while saving the budget and its related data.", ex);
-                }
+                await UpdateBudgetAsync(budget, existingBudget);
+            }
+            else
+            {
+                await AddNewBudgetAsync(budget);
             }
         }
         catch (Exception ex)
@@ -78,7 +39,103 @@ public class BudgetManager : IBudgetManager
         }
     }
 
+    private async Task AddNewBudgetAsync(Budget budget)
+    {
+        using (var transaction = await _context.Database.BeginTransactionAsync())
+        {
+            try
+            {
+                await _context.Budgets.AddAsync(budget);
+                await _context.SaveChangesAsync();
 
+                var budgetId = budget.Id;
+
+                await SaveCategoriesAndItemsAsync(budget.Incomes, budgetId);
+
+                await SaveCategoriesAndItemsAsync(budget.Expenses, budgetId);
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
+
+    private async Task UpdateBudgetAsync(Budget budget, Budget existingBudget)
+    {
+        _context.Entry(existingBudget).CurrentValues.SetValues(budget);
+
+        await UpdateCategoriesAndItemsAsync(budget.Incomes, existingBudget.Incomes);
+
+        await UpdateCategoriesAndItemsAsync(budget.Expenses, existingBudget.Expenses);
+
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task SaveCategoriesAndItemsAsync(IEnumerable<Category> categories, Guid budgetId)
+    {
+        foreach (var category in categories)
+        {
+            category.BudgetId = budgetId;
+
+            await _context.Categories.AddAsync(category);
+
+            foreach (var item in category.Items)
+            {
+                item.CategoryId = category.Id;
+                await _context.Items.AddAsync(item);
+            }
+        }
+    }
+
+    private async Task UpdateCategoriesAndItemsAsync(IEnumerable<Category> newCategories, IEnumerable<Category> existingCategories)
+    {
+        foreach (var existingCategory in existingCategories)
+        {
+            if (!newCategories.Any(c => c.Id == existingCategory.Id))
+            {
+                _context.Categories.Remove(existingCategory);
+            }
+        }
+
+        foreach (var newCategory in newCategories)
+        {
+            var existingCategory = existingCategories.FirstOrDefault(c => c.Id == newCategory.Id);
+
+            if (existingCategory != null)
+            {
+                _context.Entry(existingCategory).CurrentValues.SetValues(newCategory);
+
+                foreach (var item in newCategory.Items)
+                {
+                    var existingItem = existingCategory.Items.FirstOrDefault(i => i.Id == item.Id);
+                    if (existingItem != null)
+                    {
+                        _context.Entry(existingItem).CurrentValues.SetValues(item);
+                    }
+                    else
+                    {
+                        item.CategoryId = newCategory.Id;
+                        await _context.Items.AddAsync(item);
+                    }
+                }
+            }
+            else
+            {
+                newCategory.BudgetId = existingCategory.BudgetId;
+                await _context.Categories.AddAsync(newCategory);
+
+                foreach (var item in newCategory.Items)
+                {
+                    item.CategoryId = newCategory.Id;
+                    await _context.Items.AddAsync(item);
+                }
+            }
+        }
+    }
 
     public async Task DeleteBudgetAsync(System.Guid budgetId)
     {
@@ -111,7 +168,6 @@ public class BudgetManager : IBudgetManager
 
         return budget;
     }
-
 
     public async Task<List<Budget>> FetchAllBudgetsAsync()
     {
