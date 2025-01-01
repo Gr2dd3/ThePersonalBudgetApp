@@ -19,14 +19,7 @@ public class WorkOnBudgetModel : PageModel
 
     public async Task OnGetAsync()
     {
-        //Budgets = HttpContext.Session.Get<List<Budget>>("Budgets");
-
         Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
-        //if (Budgets is null || !Budgets.Any())
-        //{
-        //    Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
-        //    HttpContext.Session.Set("Budgets", Budgets);
-        //}
     }
 
     public async Task OnPostAsync()
@@ -36,22 +29,49 @@ public class WorkOnBudgetModel : PageModel
             IsWorkingOnBudget = false;
             SelectedBudget = null;
         }
-        else if (Request.Form["handler"] == "SelectedBudget")
+        else if (Guid.TryParse(Request.Form["selectedBudgetId"], out Guid budgetId))
         {
-            await OnPostSelectedBudgetAsync();
+            SelectedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
+            HttpContext.Session.Set("SelectedBudgetId", SelectedBudget.Id.ToByteArray());
+            IsWorkingOnBudget = true;
+        }
+        else if (Request.Form["handler"] == "SaveBudget")
+        {
+            await SaveBudgetAsync();
+        }
+        else if (Request.Form["handler"] == "AddCategory")
+        {
+            OnPostAddCategory(Request.Form["categoryType"]);
+        }
+        else if (Request.Form["handler"] == "RemoveCategory")
+        {
+            if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId))
+            {
+                OnPostRemoveCategory(categoryId);
+            }
+        }
+        else if (Request.Form["handler"] == "AddItem")
+        {
+            if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId))
+            {
+                OnPostAddItem(categoryId);
+            }
+        }
+        else if (Request.Form["handler"] == "RemoveItem")
+        {
+            if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId) &&
+                int.TryParse(Request.Form["itemIndex"], out int itemIndex))
+            {
+                OnPostRemoveItem(categoryId, itemIndex);
+            }
         }
         else
         {
-            if (Guid.TryParse(Request.Form["selectedBudgetId"], out Guid budgetId))
-            {
-                SelectedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
-                HttpContext.Session.Set("SelectedBudgetId", SelectedBudget.Id.ToByteArray());
-                IsWorkingOnBudget = true;
-            }
+            throw new Exception("Invalid handler.");
         }
     }
 
-    public async Task<IActionResult> OnPostSelectedBudgetAsync()
+    public async Task<IActionResult> SaveBudgetAsync()
     {
         if (!ModelState.IsValid)
         {
@@ -78,5 +98,92 @@ public class WorkOnBudgetModel : PageModel
         {
             await _iBudgetManager.DeleteBudgetAsync(deleteBudgetId);
         }
+    }
+
+    public IActionResult OnPostAddCategory(string categoryType)
+    {
+        if (SelectedBudget == null)
+        {
+            return Page();
+        }
+
+        if (categoryType == "Income")
+        {
+            SelectedBudget.Incomes.Add(new Category
+            {
+                Id = Guid.NewGuid(),
+                Name = "New Income",
+                Items = new List<Item>()
+            });
+        }
+        else if (categoryType == "Expense")
+        {
+            SelectedBudget.Expenses.Add(new Category
+            {
+                Id = Guid.NewGuid(),
+                Name = "New Expense",
+                Items = new List<Item>()
+            });
+        }
+        else
+        {
+            throw new ArgumentException("Invalid category type.");
+        }
+
+        return Page();
+    }
+
+
+    public IActionResult OnPostRemoveCategory(Guid categoryId)
+    {
+        if (SelectedBudget == null)
+        {
+            return Page(); 
+        }
+
+        var incomeCategory = SelectedBudget.Incomes.FirstOrDefault(c => c.Id == categoryId);
+        if (incomeCategory != null)
+        {
+            SelectedBudget.Incomes.Remove(incomeCategory);
+        }
+        else
+        {
+            var expenseCategory = SelectedBudget.Expenses.FirstOrDefault(c => c.Id == categoryId);
+            if (expenseCategory != null)
+            {
+                SelectedBudget.Expenses.Remove(expenseCategory);
+            }
+            else
+            {
+                throw new Exception("Category not found.");
+            }
+        }
+
+        return Page();
+    }
+
+
+    public IActionResult OnPostAddItem(Guid categoryId)
+    {
+        var category = SelectedBudget.Incomes.Concat(SelectedBudget.Expenses)
+            .FirstOrDefault(c => c.Id == categoryId);
+        if (category != null)
+        {
+            category.Items.Add(new Item { Name = "New Item", Amount = 0 });
+        }
+
+        return Page();
+    }
+
+    public IActionResult OnPostRemoveItem(Guid categoryId, int itemIndex)
+    {
+        var category = SelectedBudget.Incomes.Concat(SelectedBudget.Expenses)
+            .FirstOrDefault(c => c.Id == categoryId);
+        if (category != null && itemIndex >= 0 && itemIndex < category.Items.Count)
+        {
+            category.Items.RemoveAt(itemIndex);
+        }
+
+        return Page();
     }
 }

@@ -21,6 +21,103 @@
         {
             <div>
                 <input asp-for="Incomes[i].Name" placeholder="Category Name" />
+                <button type="submit" formaction="?handler=RemoveCategory&categoryType=income&index=@i">Remove</button>
+                <ul id="income-items-@i">
+                    @for (int j = 0; j < Model.Incomes[i].Items.Count; j++)
+                    {
+                        <li>
+                            <input asp-for="Incomes[i].Items[j].Name" placeholder="Item Name" />
+                            <input asp-for="Incomes[i].Items[j].Amount" placeholder="Amount" />
+                            <button type="submit" formaction="?handler=RemoveItem&categoryType=income&categoryIndex=@i&itemIndex=@j">Remove</button>
+                        </li>
+                    }
+                </ul>
+                <button type="submit" formaction="?handler=AddItem&categoryType=income&index=@i">Add Item</button>
+            </div>
+        }
+    </div>
+    <button type="submit" formaction="?handler=AddCategory&categoryType=income">Add Income Category</button>
+
+    <h2>Expenses</h2>
+    <div id="expenses-container">
+        @for (int i = 0; i < Model.Expenses.Count; i++)
+        {
+            <div>
+                <input asp-for="Expenses[i].Name" placeholder="Category Name" />
+                <button type="submit" formaction="?handler=RemoveCategory&categoryType=expense&index=@i">Remove</button>
+                <ul id="expense-items-@i">
+                    @for (int j = 0; j < Model.Expenses[i].Items.Count; j++)
+                    {
+                        <li>
+                            <input asp-for="Expenses[i].Items[j].Name" placeholder="Item Name" />
+                            <input asp-for="Expenses[i].Items[j].Amount" placeholder="Amount" />
+                            <button type="submit" formaction="?handler=RemoveItem&categoryType=expense&categoryIndex=@i&itemIndex=@j">Remove</button>
+                        </li>
+                    }
+                </ul>
+                <button type="submit" formaction="?handler=AddItem&categoryType=expense&index=@i">Add Item</button>
+            </div>
+        }
+    </div>
+    <button type="submit" formaction="?handler=AddCategory&categoryType=expense">Add Expense Category</button>
+
+    <button type="submit">Save Budget</button>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @model Budget
+@using ThePersonalBudgetApp.DAL.Models
+
+<form method="post">
+    @if (ViewData["Handler"]?.ToString() == "SelectedBudget")
+    {
+        <input type="hidden" name="handler" value="SelectedBudget" />
+    }
+    <div>
+        <label>Title:</label>
+        <input asp-for="Title" />
+    </div>
+    <div>
+        <label>Description:</label>
+        <textarea asp-for="Description"></textarea>
+    </div>
+
+    <h2>Incomes</h2>
+    <div id="incomes-container">
+        @for (int i = 0; i < Model.Incomes.Count; i++)
+        {
+            <div>
+                <input asp-for="Incomes[i].Name" placeholder="Category Name" />
                 <button type="button" onclick="removeCategory('income', @i)">Remove</button>
                 <ul id="income-items-@i">
                     @for (int j = 0; j < Model.Incomes[i].Items.Count; j++)
@@ -63,3 +160,4 @@
 
     <button type="submit">Save Budget</button>
 </form>
+ *@

@@ -125,7 +125,7 @@ public class BudgetManager : IBudgetManager
             }
             else
             {
-                newCategory.BudgetId = existingCategory.BudgetId;
+                newCategory.BudgetId = existingCategory.BudgetId; //TODO: not set to a instance of object
                 await _context.Categories.AddAsync(newCategory);
 
                 foreach (var item in newCategory.Items)
