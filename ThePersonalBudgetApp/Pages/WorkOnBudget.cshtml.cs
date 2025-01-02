@@ -41,7 +41,8 @@ public class WorkOnBudgetModel : PageModel
         }
         else if (Request.Form["handler"] == "AddCategory")
         {
-            OnPostAddCategory(Request.Form["categoryType"]);
+            var categoryType = Request.Form["categoryType"].ToString();
+            OnPostAddCategory(categoryType);
         }
         else if (Request.Form["handler"] == "RemoveCategory")
         {
