@@ -39,6 +39,9 @@ else
     <!--Work on Selected Budget-->
     @if (Model.SelectedBudget is not null)
     {
+        <p>Budget Name: @Model.SelectedBudget?.Title</p>
+        <p>Categories Count: @Model.SelectedBudget?.Incomes?.Count</p>
+
         ViewData["Handler"] = "SaveBudget";
         <partial name="Shared/BudgetFormPartial" model="Model.SelectedBudget" />
     }

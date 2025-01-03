@@ -38,6 +38,7 @@ public class BudgetManager : IBudgetManager
             throw new Exception("An error occurred while saving the budget.", ex);
         }
     }
+    #region private methods for SaveBudgetAsync
 
     private async Task AddNewBudgetAsync(Budget budget)
     {
@@ -68,9 +69,9 @@ public class BudgetManager : IBudgetManager
     {
         _context.Entry(existingBudget).CurrentValues.SetValues(budget);
 
-        await UpdateCategoriesAndItemsAsync(budget.Incomes, existingBudget.Incomes);
+        await UpdateCategoriesAndItemsAsync(budget.Incomes, existingBudget.Incomes, budget.Id);
 
-        await UpdateCategoriesAndItemsAsync(budget.Expenses, existingBudget.Expenses);
+        await UpdateCategoriesAndItemsAsync(budget.Expenses, existingBudget.Expenses, budget.Id);
 
         await _context.SaveChangesAsync();
     }
@@ -91,7 +92,7 @@ public class BudgetManager : IBudgetManager
         }
     }
 
-    private async Task UpdateCategoriesAndItemsAsync(IEnumerable<Category> newCategories, IEnumerable<Category> existingCategories)
+    private async Task UpdateCategoriesAndItemsAsync(IEnumerable<Category> newCategories, IEnumerable<Category> existingCategories, Guid budgetId)
     {
         foreach (var existingCategory in existingCategories)
         {
@@ -125,7 +126,15 @@ public class BudgetManager : IBudgetManager
             }
             else
             {
-                newCategory.BudgetId = existingCategory.BudgetId; //TODO: not set to a instance of object
+                if (existingCategory != null)
+                {
+                    newCategory.BudgetId = existingCategory.BudgetId;
+                }
+                else
+                {
+                    newCategory.BudgetId = budgetId;
+                }
+
                 await _context.Categories.AddAsync(newCategory);
 
                 foreach (var item in newCategory.Items)
@@ -137,6 +146,8 @@ public class BudgetManager : IBudgetManager
         }
     }
 
+    #endregion
+
     public async Task DeleteBudgetAsync(System.Guid budgetId)
     {
         //var budget = await _context.Budgets.FindAsync(budgetId);
@@ -147,6 +158,46 @@ public class BudgetManager : IBudgetManager
         }
 
         _context.Budgets.Remove(budget);
+        await _context.SaveChangesAsync();
+    }
+
+
+    public async Task DeleteBudgetCategoryOrItemAsync(Guid? categoryId = null, Item? item = null)
+    {
+        if (categoryId == null && item == null)
+        {
+            throw new ArgumentException("At least one parameter must be provided.");
+        }
+
+        bool removedSuccessfully = false;
+        if (categoryId is not null)
+        {
+            Category? category = null;
+            category = await _context.Categories
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.Id == categoryId);
+
+            if (category is null)
+            {
+                throw new NullReferenceException("Category not found.");
+            }
+            else
+            {
+                if (category.Items is not null || category.Items?.Count == 0)
+                {
+                    _context.Items.RemoveRange(category.Items);
+                }
+                _context.Categories.Remove(category);
+                removedSuccessfully = true;
+            }
+        }
+
+        if (item is not null)
+        {
+            _context.Remove(item);
+            removedSuccessfully = true;
+        }
+
         await _context.SaveChangesAsync();
     }
 
@@ -183,6 +234,12 @@ public class BudgetManager : IBudgetManager
             throw new Exception("No budgets found.");
         }
         return budgets;
+    }
+
+    public async Task<Budget> ReloadBudget(Budget budget)
+    {
+        _context.Entry(budget).Reload();
+        return budget;
     }
 
     public void PrintPDF(Budget budget)

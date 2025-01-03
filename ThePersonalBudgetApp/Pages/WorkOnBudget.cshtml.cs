@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ThePersonalBudgetApp.DAL.Models;
 
 namespace ThePersonalBudgetApp.Pages;
 
@@ -48,7 +49,7 @@ public class WorkOnBudgetModel : PageModel
         {
             if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId))
             {
-                RemoveCategory(categoryId);
+                OnPostRemoveCategoryAsync(categoryId);
             }
         }
         else if (Request.Query["handler"] == "AddItem")
@@ -135,32 +136,35 @@ public class WorkOnBudgetModel : PageModel
     }
 
 
-    public IActionResult OnPostRemoveCategory(Guid categoryId)
+    public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId)
     {
         if (SelectedBudget == null)
         {
             return Page();
         }
-        var incomeCategory = SelectedBudget.Incomes.FirstOrDefault(c => c.Id == categoryId);
+        SelectedBudget = await FillUpSelectedBudgetAsync();
+        var incomeCategory = SelectedBudget.Incomes?.FirstOrDefault(c => c.Id == categoryId);
         if (incomeCategory != null)
         {
-            SelectedBudget.Incomes.Remove(incomeCategory);
+            SelectedBudget.Incomes?.Remove(incomeCategory);
         }
         else
         {
-            var expenseCategory = SelectedBudget.Expenses.FirstOrDefault(c => c.Id == categoryId);
+            var expenseCategory = SelectedBudget.Expenses?.FirstOrDefault(c => c.Id == categoryId);
             if (expenseCategory != null)
             {
-                SelectedBudget.Expenses.Remove(expenseCategory);
+                SelectedBudget.Expenses?.Remove(expenseCategory);
             }
             else
             {
                 throw new Exception("Category not found.");
             }
         }
-
+        await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId);
+        SelectedBudget = await _iBudgetManager.ReloadBudget(SelectedBudget);
+;
+        IsWorkingOnBudget = true;
         return Page();
-
     }
 
     public IActionResult AddItem(Guid categoryId)
@@ -185,5 +189,22 @@ public class WorkOnBudgetModel : PageModel
         }
 
         return Page();
+    }
+
+    private async Task<Budget> FillUpSelectedBudgetAsync()
+    {
+        var budgetId = RetrieveGuidIdFromSession();
+        Budget budget = new Budget();
+        if (budgetId != new Guid())
+            budget = await _iBudgetManager.FetchBudgetAsync(budgetId);
+        return budget;
+    }
+
+    private Guid RetrieveGuidIdFromSession()
+    {
+        var result = HttpContext.Session.Get("SelectedBudgetId");
+        if (result != null && result.Length == 16)
+            return new Guid(result);
+        return Guid.Empty;
     }
 }
