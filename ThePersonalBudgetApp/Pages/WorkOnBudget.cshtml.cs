@@ -39,31 +39,31 @@ public class WorkOnBudgetModel : PageModel
         {
             await SaveBudgetAsync();
         }
-        else if (Request.Form["handler"] == "AddCategory")
+        else if (Request.Query["handler"] == "AddCategory")
         {
             var categoryType = Request.Form["categoryType"].ToString();
-            OnPostAddCategory(categoryType);
+            AddCategory(categoryType);
         }
-        else if (Request.Form["handler"] == "RemoveCategory")
+        else if (Request.Query["handler"] == "RemoveCategory")
         {
             if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId))
             {
-                OnPostRemoveCategory(categoryId);
+                RemoveCategory(categoryId);
             }
         }
-        else if (Request.Form["handler"] == "AddItem")
+        else if (Request.Query["handler"] == "AddItem")
         {
             if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId))
             {
-                OnPostAddItem(categoryId);
+                AddItem(categoryId);
             }
         }
-        else if (Request.Form["handler"] == "RemoveItem")
+        else if (Request.Query["handler"] == "RemoveItem")
         {
             if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId) &&
                 int.TryParse(Request.Form["itemIndex"], out int itemIndex))
             {
-                OnPostRemoveItem(categoryId, itemIndex);
+                RemoveItem(categoryId, itemIndex);
             }
         }
         else
@@ -101,7 +101,7 @@ public class WorkOnBudgetModel : PageModel
         }
     }
 
-    public IActionResult OnPostAddCategory(string categoryType)
+    public IActionResult AddCategory(string categoryType)
     {
         if (SelectedBudget == null)
         {
@@ -139,9 +139,8 @@ public class WorkOnBudgetModel : PageModel
     {
         if (SelectedBudget == null)
         {
-            return Page(); 
+            return Page();
         }
-
         var incomeCategory = SelectedBudget.Incomes.FirstOrDefault(c => c.Id == categoryId);
         if (incomeCategory != null)
         {
@@ -161,10 +160,10 @@ public class WorkOnBudgetModel : PageModel
         }
 
         return Page();
+
     }
 
-
-    public IActionResult OnPostAddItem(Guid categoryId)
+    public IActionResult AddItem(Guid categoryId)
     {
         var category = SelectedBudget.Incomes.Concat(SelectedBudget.Expenses)
             .FirstOrDefault(c => c.Id == categoryId);
@@ -176,7 +175,7 @@ public class WorkOnBudgetModel : PageModel
         return Page();
     }
 
-    public IActionResult OnPostRemoveItem(Guid categoryId, int itemIndex)
+    public IActionResult RemoveItem(Guid categoryId, int itemIndex)
     {
         var category = SelectedBudget.Incomes.Concat(SelectedBudget.Expenses)
             .FirstOrDefault(c => c.Id == categoryId);

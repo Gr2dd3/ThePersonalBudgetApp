@@ -22,7 +22,7 @@
             <div>
                 <form method="post">
                     <input asp-for="Incomes[i].Name" placeholder="Income category Name" />
-                    <input type="hidden" name="categoryId" value="Incomes[@i].Id" />
+                    <input type="hidden" name="categoryId" value="@Model.Incomes[i].Id" />
                     <button type="submit" formaction="?handler=RemoveCategory">Remove Category</button>
                 </form>
                 <ul id="income-items-@i">
