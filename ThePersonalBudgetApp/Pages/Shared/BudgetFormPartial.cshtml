@@ -33,8 +33,8 @@
                             <input asp-for="Incomes[i].Items[j].Amount" placeholder="Amount" />
                             <form method="post">
                                 <input type="hidden" name="handler" value="RemoveItem" />
-                                <input type="hidden" name="categoryType" value="income" />
-                                <input type="hidden" name="categoryIndex" value="@i" />
+                                <input type="hidden" name="isIncome" value="@true" />
+                                <input type="hidden" name="categoryId" value="@Model.Incomes[i].Id" />
                                 <input type="hidden" name="itemIndex" value="@j" />
                                 <button type="submit">Remove Item</button>
                             </form>

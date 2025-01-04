@@ -169,7 +169,6 @@ public class BudgetManager : IBudgetManager
             throw new ArgumentException("At least one parameter must be provided.");
         }
 
-        bool removedSuccessfully = false;
         if (categoryId is not null)
         {
             Category? category = null;
@@ -188,14 +187,12 @@ public class BudgetManager : IBudgetManager
                     _context.Items.RemoveRange(category.Items);
                 }
                 _context.Categories.Remove(category);
-                removedSuccessfully = true;
             }
         }
 
         if (item is not null)
         {
             _context.Remove(item);
-            removedSuccessfully = true;
         }
 
         await _context.SaveChangesAsync();
@@ -236,7 +233,7 @@ public class BudgetManager : IBudgetManager
         return budgets;
     }
 
-    public async Task<Budget> ReloadBudget(Budget budget)
+    public Budget ReloadBudget(Budget budget)
     {
         _context.Entry(budget).Reload();
         return budget;

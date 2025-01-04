@@ -45,26 +45,11 @@ public class WorkOnBudgetModel : PageModel
             var categoryType = Request.Form["categoryType"].ToString();
             AddCategory(categoryType);
         }
-        else if (Request.Query["handler"] == "RemoveCategory")
-        {
-            if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId))
-            {
-                OnPostRemoveCategoryAsync(categoryId);
-            }
-        }
         else if (Request.Query["handler"] == "AddItem")
         {
             if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId))
             {
                 AddItem(categoryId);
-            }
-        }
-        else if (Request.Query["handler"] == "RemoveItem")
-        {
-            if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId) &&
-                int.TryParse(Request.Form["itemIndex"], out int itemIndex))
-            {
-                RemoveItem(categoryId, itemIndex);
             }
         }
         else
@@ -142,27 +127,10 @@ public class WorkOnBudgetModel : PageModel
         {
             return Page();
         }
-        SelectedBudget = await FillUpSelectedBudgetAsync();
-        var incomeCategory = SelectedBudget.Incomes?.FirstOrDefault(c => c.Id == categoryId);
-        if (incomeCategory != null)
-        {
-            SelectedBudget.Incomes?.Remove(incomeCategory);
-        }
-        else
-        {
-            var expenseCategory = SelectedBudget.Expenses?.FirstOrDefault(c => c.Id == categoryId);
-            if (expenseCategory != null)
-            {
-                SelectedBudget.Expenses?.Remove(expenseCategory);
-            }
-            else
-            {
-                throw new Exception("Category not found.");
-            }
-        }
-        await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId);
-        SelectedBudget = await _iBudgetManager.ReloadBudget(SelectedBudget);
-;
+
+        await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId, item: null);
+        SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget);
+        ;
         IsWorkingOnBudget = true;
         return Page();
     }
@@ -179,15 +147,26 @@ public class WorkOnBudgetModel : PageModel
         return Page();
     }
 
-    public IActionResult RemoveItem(Guid categoryId, int itemIndex)
+    public async Task<IActionResult> OnPostRemoveItemAsync(Guid categoryId, int itemIndex)
     {
-        var category = SelectedBudget.Incomes.Concat(SelectedBudget.Expenses)
-            .FirstOrDefault(c => c.Id == categoryId);
-        if (category != null && itemIndex >= 0 && itemIndex < category.Items.Count)
+        if (SelectedBudget == null)
         {
-            category.Items.RemoveAt(itemIndex);
+            return Page();
         }
 
+        var removeItem = SelectedBudget?.Incomes?
+            .Concat(SelectedBudget.Expenses!)?
+            .FirstOrDefault(x => x.Id == categoryId)?
+            .Items[itemIndex];
+        
+        if (removeItem is null)
+        {
+            return Page();
+        }
+
+        await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId: null, removeItem);
+        SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget);
+        IsWorkingOnBudget = true;
         return Page();
     }
 
