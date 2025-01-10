@@ -1,0 +1,98 @@
+﻿@model Budget
+@using ThePersonalBudgetApp.DAL.Models
+
+<form method="post">
+    @if (ViewData["Handler"]?.ToString() == "SelectedBudget")
+    {
+        <input type="hidden" name="handler" value="SelectedBudget" />
+    }
+    <div>
+        <label>Title:</label>
+        <input asp-for="Title" />
+    </div>
+    <div>
+        <label>Description:</label>
+        <textarea asp-for="Description"></textarea>
+    </div>
+
+    <h2>Incomes</h2>
+    <div id="incomes-container">
+        @for (int i = 0; i < Model.Incomes.Count; i++)
+        {
+            <div>
+                <form method="post">
+                    <input asp-for="Incomes[i].Name" placeholder="Income category Name" />
+                    <input type="hidden" name="categoryId" value="@Model.Incomes[i].Id" />
+                    <button type="submit" formaction="?handler=RemoveCategory">Remove Category</button>
+                </form>
+                <ul id="income-items-@i">
+                    @for (int j = 0; j < Model.Incomes[i].Items.Count; j++)
+                    {
+                        <li>
+                            <input asp-for="Incomes[i].Items[j].Name" placeholder="Item Name" />
+                            <input asp-for="Incomes[i].Items[j].Amount" placeholder="Amount" />
+                            <form method="post">
+                                <input type="hidden" name="handler" value="RemoveItem" />
+                                <input type="hidden" name="isIncome" value="@true" />
+                                <input type="hidden" name="categoryId" value="@Model.Incomes[i].Id" />
+                                <input type="hidden" name="itemIndex" value="@j" />
+                                <button type="submit">Remove Item</button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+                <form method="post">
+                    <input type="hidden" name="categoryType" value="income" />
+                    <input type="hidden" name="index" value="@i" />
+                    <button type="submit" formaction="?handler=AddItem">Add Item</button>
+                </form>
+            </div>
+        }
+    </div>
+    <form method="post">
+        <input type="hidden" name="categoryType" value="income" />
+        <button type="submit" formaction="?handler=AddCategory">Add Income Category</button>
+    </form>
+
+    <h2>Expenses</h2>
+    <div id="expenses-container">
+        @for (int i = 0; i < Model.Expenses.Count; i++)
+        {
+            <div>
+                <form method="post">
+                    <input asp-for="Expenses[i].Name" placeholder="Category Name" />
+                    <input type="hidden" name="categoryType" value="expense" />
+                    <input type="hidden" name="index" value="@i" />
+                    <button type="submit" formaction="?handler=RemoveCategory">Remove Category</button>
+                </form>
+                <ul id="expense-items-@i">
+                    @for (int j = 0; j < Model.Expenses[i].Items.Count; j++)
+                    {
+                        <li>
+                            <input asp-for="Expenses[i].Items[j].Name" placeholder="Item Name" />
+                            <input asp-for="Expenses[i].Items[j].Amount" placeholder="Amount" />
+                            <form method="post">
+                                <input type="hidden" name="handler" value="RemoveItem" />
+                                <input type="hidden" name="categoryType" value="expense" />
+                                <input type="hidden" name="categoryIndex" value="@i" />
+                                <input type="hidden" name="itemIndex" value="@j" />
+                                <button type="submit">Remove Item</button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+                <form method="post">
+                    <input type="hidden" name="categoryType" value="expense" />
+                    <input type="hidden" name="index" value="@i" />
+                    <button type="submit" formaction="?handler=AddItem">Add Item</button>
+                </form>
+            </div>
+        }
+    </div>
+    <form method="post">
+        <input type="hidden" name="categoryType" value="expense" />
+        <button type="submit" formaction="?handler=AddCategory">Add Expense Category</button>
+    </form>
+
+    <button type="submit" formaction="?handler=SaveBudget">Save Budget</button>
+</form>

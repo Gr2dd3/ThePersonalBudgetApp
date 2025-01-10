@@ -1,0 +1,20 @@
+﻿@page
+@model ThePersonalBudgetApp.Pages.CreateBudgetModel
+@{
+    ViewData["Title"] = "Budget Manager";
+}
+
+<h1>Budget Manager</h1>
+
+@if (Model.Budget != null)
+{
+    <partial name="Shared/BudgetFormPartial" model="Model.Budget" />
+}
+else
+{
+    <h1>Something went wrong...</h1>
+}
+
+@section Scripts {
+    <script src="js/site.js"></script>
+}
