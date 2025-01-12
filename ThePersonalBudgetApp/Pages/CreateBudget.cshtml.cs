@@ -6,7 +6,7 @@ namespace ThePersonalBudgetApp.Pages
     public class CreateBudgetModel : PageModel
     {
         [BindProperty]
-        public Budget Budget { get; set; } = new Budget();
+        public Budget CreatedBudget { get; set; } = new Budget();
 
         private IBudgetManager _iBudgetManager;
 
@@ -17,29 +17,99 @@ namespace ThePersonalBudgetApp.Pages
 
         public void OnGet()
         {
-            if (Budget.Title == null)
+            if (CreatedBudget.Title == null)
             {
-                Budget.Title = "Min Budget";
-                Budget.Description = "Beskrivning";
+                CreatedBudget.Title = "Min Budget";
+                CreatedBudget.Description = "Beskrivning";
             }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostSaveBudgetAsync()
         {
-            //TODO: Kolla datan som skickas tillbaka och sparas för ny budget. Den hämtas inte riktigt just nu till att arbeta med.
-
             if (!ModelState.IsValid)
             {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine(error.ErrorMessage);
-                }
                 return Page();
             }
-            // Handle the budget data here
-            await _iBudgetManager.SaveBudgetAsync(Budget);
+
+            if (CreatedBudget is not null)
+            {
+                var budgetId = HttpContext.Session.Get("SelectedBudgetId");
+                if (budgetId != null && budgetId.Length == 16)
+                {
+                    CreatedBudget.Id = new Guid(budgetId);
+                }
+
+                await _iBudgetManager.SaveBudgetAsync(CreatedBudget);
+            }
 
             return RedirectToPage();
+        }
+
+        public IActionResult OnPostAddCategoryAsync(string categoryType)
+        {
+            if (CreatedBudget == null)
+            {
+                return Page();
+            }
+
+            if (categoryType == "income")
+            {
+                if (CreatedBudget.Incomes == null || CreatedBudget.Incomes.Count < 1)
+                {
+                    CreatedBudget.Incomes = new List<Category>();
+                }
+
+                CreatedBudget.Incomes.Add(new Category
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "New Income",
+                    Items = new List<Item>()
+                });
+            }
+            else if (categoryType == "expense")
+            {
+                if (CreatedBudget.Expenses == null || CreatedBudget.Expenses.Count < 1)
+                {
+                    CreatedBudget.Expenses = new List<Category>();
+                }
+
+                CreatedBudget.Expenses.Add(new Category
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "New Expense",
+                    Items = new List<Item>()
+                });
+            }
+            else
+            {
+                throw new ArgumentException("Invalid category type.");
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId)
+        {
+            if (CreatedBudget == null)
+            {
+                return Page();
+            }
+
+            await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId, item: null);
+            CreatedBudget = _iBudgetManager.ReloadBudget(CreatedBudget);
+            return Page();
+        }
+
+        public IActionResult AddItem(Guid categoryId)
+        {
+            var category = CreatedBudget.Incomes!.Concat(CreatedBudget.Expenses!)
+                .FirstOrDefault(c => c.Id == categoryId);
+            if (category != null)
+            {
+                category.Items!.Add(new Item { Name = "New Item", Amount = 0 });
+            }
+
+            return Page();
         }
     }
 }

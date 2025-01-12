@@ -17,7 +17,7 @@
                         <input type="hidden" name="selectedBudgetId" value="@budget.Id" />
                         <button type="submit" class="btn btn-link">@budget.Title</button>
                     </form>
-                    <form method="post" asp-page-handler="Delete">
+                    <form method="post" asp-page-handler="DeleteBudget">
                         <input type="hidden" name="deleteBudgetId" value="@budget.Id" />
                         <button type="submit" class="btn btn-link" onclick="return confirm('Are you sure you want to delete this budget?')">
                             <img src="~/img/delete_sticker.png" alt="Delete" />

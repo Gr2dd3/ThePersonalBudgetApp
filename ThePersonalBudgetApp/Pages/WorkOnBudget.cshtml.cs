@@ -36,29 +36,13 @@ public class WorkOnBudgetModel : PageModel
             HttpContext.Session.Set("SelectedBudgetId", SelectedBudget.Id.ToByteArray());
             IsWorkingOnBudget = true;
         }
-        else if (Request.Form["handler"] == "SaveBudget")
-        {
-            await SaveBudgetAsync();
-        }
-        else if (Request.Query["handler"] == "AddCategory")
-        {
-            var categoryType = Request.Form["categoryType"].ToString();
-            AddCategory(categoryType);
-        }
-        else if (Request.Query["handler"] == "AddItem")
-        {
-            if (Guid.TryParse(Request.Form["categoryId"], out Guid categoryId))
-            {
-                AddItem(categoryId);
-            }
-        }
         else
         {
             throw new Exception("Invalid handler.");
         }
     }
 
-    public async Task<IActionResult> SaveBudgetAsync()
+    public async Task<IActionResult> OnPostSaveBudgetAsync()
     {
         if (!ModelState.IsValid)
         {
@@ -79,7 +63,7 @@ public class WorkOnBudgetModel : PageModel
         return RedirectToPage();
     }
 
-    public async Task OnPostDeleteAsync()
+    public async Task OnPostDeleteBudgetAsync()
     {
         if (Guid.TryParse(Request.Form["deleteBudgetId"], out Guid deleteBudgetId))
         {
@@ -87,15 +71,20 @@ public class WorkOnBudgetModel : PageModel
         }
     }
 
-    public IActionResult AddCategory(string categoryType)
+    public IActionResult OnPostAddCategoryAsync(string categoryType)
     {
         if (SelectedBudget == null)
         {
             return Page();
         }
 
-        if (categoryType == "Income")
+        if (categoryType == "income")
         {
+            if (SelectedBudget.Incomes == null || SelectedBudget.Incomes.Count < 1)
+            {
+                SelectedBudget.Incomes = new List<Category>();
+            }
+
             SelectedBudget.Incomes.Add(new Category
             {
                 Id = Guid.NewGuid(),
@@ -103,8 +92,13 @@ public class WorkOnBudgetModel : PageModel
                 Items = new List<Item>()
             });
         }
-        else if (categoryType == "Expense")
+        else if (categoryType == "expense")
         {
+            if (SelectedBudget.Expenses == null || SelectedBudget.Expenses.Count < 1)
+            {
+                SelectedBudget.Expenses = new List<Category>();
+            }
+
             SelectedBudget.Expenses.Add(new Category
             {
                 Id = Guid.NewGuid(),
@@ -130,18 +124,17 @@ public class WorkOnBudgetModel : PageModel
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId, item: null);
         SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget);
-        ;
         IsWorkingOnBudget = true;
         return Page();
     }
 
-    public IActionResult AddItem(Guid categoryId)
+    public IActionResult OnPostAddItem(Guid categoryId)
     {
-        var category = SelectedBudget.Incomes.Concat(SelectedBudget.Expenses)
+        var category = SelectedBudget!.Incomes!.Concat(SelectedBudget.Expenses!)
             .FirstOrDefault(c => c.Id == categoryId);
         if (category != null)
         {
-            category.Items.Add(new Item { Name = "New Item", Amount = 0 });
+            category.Items!.Add(new Item { Name = "New Item", Amount = 0 });
         }
 
         return Page();
