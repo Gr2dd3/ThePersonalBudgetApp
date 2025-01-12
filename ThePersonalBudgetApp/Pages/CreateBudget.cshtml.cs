@@ -32,7 +32,8 @@ namespace ThePersonalBudgetApp.Pages
             }
             if (CreatedBudget is not null)
             {
-                if (CreatedBudget.Id.ToByteArray().Length < 16)
+                //TODO 13/1 Sparar budget när man skapar något. Vart bör vi hämta tillbaka den när sidan hämtas igen?
+                if (CreatedBudget.Id == Guid.Empty)
                 {
                     CreatedBudget.Id = new Guid();
                     HttpContext.Session.Set("CreatedBudgetId", CreatedBudget.Id.ToByteArray());
