@@ -23,7 +23,7 @@ public class WorkOnBudgetModel : PageModel
         Budgets = await _iBudgetManager.FetchAllBudgetsAsync();
     }
 
-    public async Task OnPostAsync()
+    public async Task<IActionResult> OnPostAsync()
     {
         if (Request.Form["action"] == "back")
         {
@@ -40,6 +40,7 @@ public class WorkOnBudgetModel : PageModel
         {
             throw new Exception("Invalid handler.");
         }
+        return Page();
     }
 
     public async Task<IActionResult> OnPostSaveBudgetAsync()
@@ -80,7 +81,7 @@ public class WorkOnBudgetModel : PageModel
 
         if (categoryType == "income")
         {
-            if (SelectedBudget.Incomes == null || SelectedBudget.Incomes.Count < 1)
+            if (SelectedBudget.Incomes == null)
             {
                 SelectedBudget.Incomes = new List<Category>();
             }
@@ -111,7 +112,7 @@ public class WorkOnBudgetModel : PageModel
             throw new ArgumentException("Invalid category type.");
         }
 
-        return Page();
+        return RedirectToPage();
     }
 
 
@@ -125,7 +126,7 @@ public class WorkOnBudgetModel : PageModel
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId, item: null);
         SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget);
         IsWorkingOnBudget = true;
-        return Page();
+        return RedirectToPage();
     }
 
     public IActionResult OnPostAddItem(Guid categoryId)
@@ -150,7 +151,7 @@ public class WorkOnBudgetModel : PageModel
         var removeItem = SelectedBudget?.Incomes?
             .Concat(SelectedBudget.Expenses!)?
             .FirstOrDefault(x => x.Id == categoryId)?
-            .Items[itemIndex];
+            .Items![itemIndex];
         
         if (removeItem is null)
         {
@@ -158,25 +159,10 @@ public class WorkOnBudgetModel : PageModel
         }
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId: null, removeItem);
-        SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget);
+        SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget!);
         IsWorkingOnBudget = true;
         return Page();
     }
 
-    private async Task<Budget> FillUpSelectedBudgetAsync()
-    {
-        var budgetId = RetrieveGuidIdFromSession();
-        Budget budget = new Budget();
-        if (budgetId != new Guid())
-            budget = await _iBudgetManager.FetchBudgetAsync(budgetId);
-        return budget;
-    }
 
-    private Guid RetrieveGuidIdFromSession()
-    {
-        var result = HttpContext.Session.Get("SelectedBudgetId");
-        if (result != null && result.Length == 16)
-            return new Guid(result);
-        return Guid.Empty;
-    }
 }
