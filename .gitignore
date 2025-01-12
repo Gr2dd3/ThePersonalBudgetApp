@@ -361,3 +361,5 @@ desktop.ini
 *.vscode
 *.sqlite
 *.sqlite3
+
+.vs/
