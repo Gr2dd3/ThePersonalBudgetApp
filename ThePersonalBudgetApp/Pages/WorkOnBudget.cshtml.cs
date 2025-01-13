@@ -6,6 +6,7 @@ namespace ThePersonalBudgetApp.Pages;
 public class WorkOnBudgetModel : PageModel
 {
     private IBudgetManager _iBudgetManager;
+    private string _key = "selectedBudgetId";
     public WorkOnBudgetModel(IBudgetManager budgetManager)
     {
         if (_iBudgetManager == null)
@@ -30,10 +31,10 @@ public class WorkOnBudgetModel : PageModel
             IsWorkingOnBudget = false;
             SelectedBudget = null;
         }
-        else if (Guid.TryParse(Request.Form["selectedBudgetId"], out Guid budgetId))
+        else if (Guid.TryParse(Request.Form[_key], out Guid budgetId))
         {
             SelectedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
-            HttpContext.Session.Set("SelectedBudgetId", SelectedBudget.Id.ToByteArray());
+            HttpContext.Session.Set(_key, SelectedBudget.Id.ToByteArray());
             IsWorkingOnBudget = true;
         }
         else
@@ -52,12 +53,14 @@ public class WorkOnBudgetModel : PageModel
 
         if (SelectedBudget is not null)
         {
-            var budgetId = HttpContext.Session.Get("SelectedBudgetId");
+            var budgetId = HttpContext.Session.Get(_key);
             if (budgetId != null && budgetId.Length == 16)
             {
                 SelectedBudget.Id = new Guid(budgetId);
             }
-
+            // Is every method persistant against Page Reload? Save in end of every method?
+            //Is there a need to fill up budget in OnGet?
+            // Is budget filled?
             await _iBudgetManager.SaveBudgetAsync(SelectedBudget);
         }
 
