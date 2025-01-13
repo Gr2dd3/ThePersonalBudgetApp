@@ -2,13 +2,10 @@
 
 namespace ThePersonalBudgetApp.DAL.Helpers;
 
-public class GlobalMethods
+public class GlobalMethods(IBudgetManager iBudgetManager)
 {
-    private IBudgetManager _iBudgetManager;
-    public GlobalMethods(IBudgetManager iBudgetManager)
-    {
-        _iBudgetManager = iBudgetManager;
-    }
+
+    private IBudgetManager _iBudgetManager = iBudgetManager;
 
     public async Task<Budget> FillUpSelectedBudgetAsync(HttpContext httpContext)
     {

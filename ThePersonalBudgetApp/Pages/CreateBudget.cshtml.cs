@@ -9,18 +9,29 @@ namespace ThePersonalBudgetApp.Pages
         public Budget CreatedBudget { get; set; } = new Budget();
 
         private IBudgetManager _iBudgetManager;
+        private GlobalMethods _globalMethods;
 
-        public CreateBudgetModel(IBudgetManager iBudgetManager)
+        public CreateBudgetModel(IBudgetManager iBudgetManager, GlobalMethods globalMethods)
         {
             _iBudgetManager = iBudgetManager;
+            _globalMethods = globalMethods;
         }
 
-        public void OnGet()
+        public async Task OnGet()
         {
+
             if (CreatedBudget.Title == null)
             {
                 CreatedBudget.Title = "Min Budget";
                 CreatedBudget.Description = "Beskrivning";
+            }
+            else
+            {
+                CreatedBudget = await _globalMethods.FillUpSelectedBudgetAsync(HttpContext);
+                if (CreatedBudget.Id == Guid.Empty)
+                {
+                    throw new Exception("broken budget");
+                }
             }
         }
 
@@ -35,9 +46,13 @@ namespace ThePersonalBudgetApp.Pages
                 //TODO 13/1 Sparar budget när man skapar något. Vart bör vi hämta tillbaka den när sidan hämtas igen?
                 if (CreatedBudget.Id == Guid.Empty)
                 {
-                    CreatedBudget.Id = new Guid();
+                    CreatedBudget.Id = Guid.NewGuid();
                     HttpContext.Session.Set("CreatedBudgetId", CreatedBudget.Id.ToByteArray());
                     // To fetch budget from session see DAL.Helpers.GlobalMethods
+                }
+                else
+                {
+                    CreatedBudget = await _globalMethods.FillUpSelectedBudgetAsync(HttpContext);
                 }
 
                 await _iBudgetManager.SaveBudgetAsync(CreatedBudget);
