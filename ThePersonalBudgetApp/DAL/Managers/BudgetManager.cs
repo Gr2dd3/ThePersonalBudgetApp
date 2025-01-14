@@ -15,13 +15,16 @@ public class BudgetManager : IBudgetManager
         if (budget == null)
             throw new ArgumentNullException(nameof(budget), "Budget cannot be null");
 
+        if (budget.Id == Guid.Empty)
+            return;
+        //TODO: Delete budget from db and then make a sync - Add-Migration UpdatedOnModeling, Update-Database
         try
         {
             var existingBudget = await _context.Budgets
                 .Include(b => b.Incomes)
-                .ThenInclude(c => c.Items)
+                    .ThenInclude(c => c.Items)
                 .Include(b => b.Expenses)
-                .ThenInclude(c => c.Items)
+                    .ThenInclude(c => c.Items)
                 .FirstOrDefaultAsync(b => b.Id == budget.Id);
 
             if (existingBudget != null)

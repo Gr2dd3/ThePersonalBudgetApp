@@ -42,12 +42,10 @@ namespace ThePersonalBudgetApp.Pages
             }
             if (CreatedBudget is not null)
             {
-                //TODO 13/1 Sparar budget när man skapar något. Vart bör vi hämta tillbaka den när sidan hämtas igen?
                 if (CreatedBudget.Id == Guid.Empty)
                 {
                     CreatedBudget.Id = Guid.NewGuid();
                     _httpContextAccessor.HttpContext.Session.Set(_sessionKey, CreatedBudget.Id.ToByteArray());
-                    // To fetch budget from session see DAL.Helpers.GlobalMethods
                 }
                 else
                 {
@@ -60,45 +58,21 @@ namespace ThePersonalBudgetApp.Pages
             return Page();
         }
 
-        public IActionResult OnPostAddCategoryAsync(string categoryType)
+        public IActionResult OnPostAddCategoryAsync(bool categoryType)
         {
             if (CreatedBudget == null)
             {
                 return Page();
             }
 
-            if (categoryType == "income")
+            CreatedBudget.AddCategory(new Category()
             {
-                if (CreatedBudget.Incomes == null)
-                {
-                    CreatedBudget.Incomes = new List<Category>();
-                }
+                Id = Guid.NewGuid(),
+                Name = "New Income",
+                IsIncome = categoryType,
+                Items = new List<Item>()
+            });
 
-                CreatedBudget.Incomes.Add(new Category
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "New Income",
-                    Items = new List<Item>()
-                });
-            }
-            else if (categoryType == "expense")
-            {
-                if (CreatedBudget.Expenses == null)
-                {
-                    CreatedBudget.Expenses = new List<Category>();
-                }
-
-                CreatedBudget.Expenses.Add(new Category
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "New Expense",
-                    Items = new List<Item>()
-                });
-            }
-            else
-            {
-                throw new ArgumentException("Invalid category type.");
-            }
             // Save CreatedBudget
             _ = OnPostSaveBudgetAsync();
             return RedirectToPage();
