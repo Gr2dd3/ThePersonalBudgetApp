@@ -11,18 +11,18 @@ namespace ThePersonalBudgetApp.Pages
 
         private IBudgetManager _iBudgetManager;
         private GlobalMethods _globalMethods;
-        private HttpContext _httpContext;
-        private string _key = "CreatedBudgetId";
-        public CreateBudgetModel(IBudgetManager iBudgetManager, GlobalMethods globalMethods, HttpContext httpContext)
+        private IHttpContextAccessor _httpContextAccessor;
+        private string _sessionKey = "CreatedBudgetId";
+        public CreateBudgetModel(IBudgetManager iBudgetManager, GlobalMethods globalMethods, IHttpContextAccessor httpContextAccessor)
         {
             _iBudgetManager = iBudgetManager;
             _globalMethods = globalMethods;
-            _httpContext = httpContext;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task OnGet()
         {
-            var budget = await _globalMethods.FillUpSelectedBudgetAsync(_httpContext, _key);
+            var budget = await _globalMethods.FillUpSelectedBudgetAsync(_httpContextAccessor.HttpContext, _sessionKey);
             if (budget!.Id != Guid.Empty)
             {
                 CreatedBudget = budget;
@@ -46,12 +46,12 @@ namespace ThePersonalBudgetApp.Pages
                 if (CreatedBudget.Id == Guid.Empty)
                 {
                     CreatedBudget.Id = Guid.NewGuid();
-                    _httpContext.Session.Set(_key, CreatedBudget.Id.ToByteArray());
+                    _httpContextAccessor.HttpContext.Session.Set(_sessionKey, CreatedBudget.Id.ToByteArray());
                     // To fetch budget from session see DAL.Helpers.GlobalMethods
                 }
                 else
                 {
-                    CreatedBudget = await _globalMethods.FillUpSelectedBudgetAsync(_httpContext, _key);
+                    CreatedBudget = await _globalMethods.FillUpSelectedBudgetAsync(_httpContextAccessor.HttpContext, _sessionKey);
                 }
 
                 await _iBudgetManager.SaveBudgetAsync(CreatedBudget);
