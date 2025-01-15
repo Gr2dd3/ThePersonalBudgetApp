@@ -12,27 +12,14 @@ public class BudgetDbContext : DbContext
     {
         modelBuilder.Entity<Category>()
             .HasOne(c => c.Budget)
-            .WithMany(b => b.Incomes)
+            .WithMany(b => b.Categories)
             .HasForeignKey(c => c.BudgetId)
-            .HasPrincipalKey(b => b.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Category>()
-            .HasOne(c => c.Budget)
-            .WithMany(b => b.Expenses)
-            .HasForeignKey(c => c.BudgetId)
-            .HasPrincipalKey(b => b.Id)
+            .HasMany(c => c.Items)
+            .WithOne(i => i.Category)
+            .HasForeignKey(i => i.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Budget>()
-            .Navigation(b => b.Incomes)
-            .HasField("_incomes")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
-
-        modelBuilder.Entity<Budget>()
-            .Navigation(b => b.Expenses)
-            .HasField("_expenses")
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
-
 }

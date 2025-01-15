@@ -9,6 +9,10 @@ namespace ThePersonalBudgetApp.Pages
         [BindProperty]
         public Budget CreatedBudget { get; set; } = new Budget();
 
+        // TODO: Include Incomes and Expenses list to pageview 
+        public List<Category> Incomes { get; set; } = new List<Category>();
+        public List<Category> Expenses { get; set; } = new List<Category>();
+
         private IBudgetManager _iBudgetManager;
         private GlobalMethods _globalMethods;
         private IHttpContextAccessor _httpContextAccessor;
@@ -26,6 +30,11 @@ namespace ThePersonalBudgetApp.Pages
             if (budget!.Id != Guid.Empty)
             {
                 CreatedBudget = budget;
+                if (CreatedBudget != null)
+                {
+                    Incomes = CreatedBudget.Categories!.Where(c => c.IsIncome).ToList();
+                    Expenses = CreatedBudget.Categories!.Where(c => !c.IsIncome).ToList();
+                }
             }
             else
             {
@@ -65,7 +74,7 @@ namespace ThePersonalBudgetApp.Pages
                 return Page();
             }
 
-            CreatedBudget.AddCategory(new Category()
+            CreatedBudget.Categories.Add(new Category()
             {
                 Id = Guid.NewGuid(),
                 Name = "New Income",
@@ -92,7 +101,7 @@ namespace ThePersonalBudgetApp.Pages
 
         public IActionResult OnPostAddItem(Guid categoryId)
         {
-            var category = CreatedBudget.Incomes!.Concat(CreatedBudget.Expenses!)
+            var category = CreatedBudget.Categories!
                 .FirstOrDefault(c => c.Id == categoryId);
             if (category != null)
             {
@@ -109,8 +118,7 @@ namespace ThePersonalBudgetApp.Pages
                 return Page();
             }
 
-            var removeItem = CreatedBudget?.Incomes?
-                .Concat(CreatedBudget.Expenses!)?
+            var removeItem = CreatedBudget?.Categories!
                 .FirstOrDefault(x => x.Id == categoryId)?
                 .Items![itemIndex];
 

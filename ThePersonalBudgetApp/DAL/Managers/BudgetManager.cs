@@ -21,9 +21,7 @@ public class BudgetManager : IBudgetManager
         try
         {
             var existingBudget = await _context.Budgets
-                .Include(b => b.Incomes)
-                    .ThenInclude(c => c.Items)
-                .Include(b => b.Expenses)
+                .Include(b => b.Categories)
                     .ThenInclude(c => c.Items)
                 .FirstOrDefaultAsync(b => b.Id == budget.Id);
 
@@ -54,9 +52,7 @@ public class BudgetManager : IBudgetManager
 
                 var budgetId = budget.Id;
 
-                await SaveCategoriesAndItemsAsync(budget.Incomes, budgetId);
-
-                await SaveCategoriesAndItemsAsync(budget.Expenses, budgetId);
+                await SaveCategoriesAndItemsAsync(budget.Categories, budgetId);
 
                 await transaction.CommitAsync();
             }
@@ -72,9 +68,7 @@ public class BudgetManager : IBudgetManager
     {
         _context.Entry(existingBudget).CurrentValues.SetValues(budget);
 
-        await UpdateCategoriesAndItemsAsync(budget.Incomes, existingBudget.Incomes, budget.Id);
-
-        await UpdateCategoriesAndItemsAsync(budget.Expenses, existingBudget.Expenses, budget.Id);
+        await UpdateCategoriesAndItemsAsync(budget.Categories, existingBudget.Categories, budget.Id);
 
         await _context.SaveChangesAsync();
     }
@@ -203,30 +197,24 @@ public class BudgetManager : IBudgetManager
 
     public async Task<Budget> FetchBudgetAsync(Guid budgetId)
     {
-#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-        var budget = await _context.Budgets
-            .Include(b => b.Incomes)
-                .ThenInclude(c => c.Items)
-            .Include(b => b.Expenses)
+        var fetchedBudget = await _context.Budgets!
+            .Include(b => b.Categories!)
                 .ThenInclude(c => c.Items)
             .FirstOrDefaultAsync(b => b.Id == budgetId);
-#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
-        if (budget == null)
+        if (fetchedBudget == null)
         {
             throw new KeyNotFoundException($"Budget with ID {budgetId} not found.");
         }
 
-        return budget;
+        return fetchedBudget;
     }
 
     public async Task<List<Budget>> FetchAllBudgetsAsync()
     {
-        var budgets = await _context.Budgets
-            .Include(b => b.Incomes)
+        var budgets = await _context.Budgets!
+            .Include(b => b.Categories!)
                 .ThenInclude(i => i.Items)
-            .Include(b => b.Expenses)
-                .ThenInclude(e => e.Items)
             .ToListAsync();
 
         if (budgets == null || !budgets.Any())
@@ -244,8 +232,14 @@ public class BudgetManager : IBudgetManager
 
     public void PrintPDF(Budget budget)
     {
+        List<Category> incomes = new List<Category>();
+        List<Category> expenses = new List<Category>();
         if (budget == null)
             throw new ArgumentNullException(nameof(budget), "Budget cannot be null");
+
+        incomes = budget.Categories!.Where(c => c.IsIncome).ToList();
+        expenses = budget.Categories!.Where(c => !c.IsIncome).ToList();
+
 
         var document = Document.Create(container =>
         {
@@ -259,7 +253,7 @@ public class BudgetManager : IBudgetManager
                     column.Item().Text($"Description: {budget.Description}").FontSize(14);
 
                     column.Item().Text("Incomes:").FontSize(16).Bold();
-                    foreach (var income in budget.Incomes)
+                    foreach (var income in incomes)
                     {
                         column.Item().Text($"- {income.Name}");
                         foreach (var item in income.Items)
@@ -269,7 +263,7 @@ public class BudgetManager : IBudgetManager
                     }
 
                     column.Item().Text("Expenses:").FontSize(16).Bold();
-                    foreach (var expense in budget.Expenses)
+                    foreach (var expense in expenses)
                     {
                         column.Item().Text($"- {expense.Name}");
                         foreach (var item in expense.Items)

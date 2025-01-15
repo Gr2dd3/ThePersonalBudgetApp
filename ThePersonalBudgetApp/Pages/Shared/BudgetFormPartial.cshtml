@@ -1,6 +1,11 @@
 ﻿@model Budget
 @using ThePersonalBudgetApp.DAL.Models
 
+@{
+    var incomes = Model.Categories.Where(c => c.IsIncome).ToList();
+    var expenses = Model.Categories.Where(c => !c.IsIncome).ToList();
+}
+
 <form method="post">
     @if (ViewData["Handler"]?.ToString() == "SelectedBudget")
     {
@@ -17,12 +22,12 @@
 
     <h2>Incomes</h2>
     <div id="incomes-container">
-        @for (int i = 0; i < Model.Incomes.Count; i++)
+        @for (int i = 0; i < incomes.Count; i++)
         {
             <div>
                 <form method="post">
-                    <input asp-for="Incomes[i].Name" placeholder="Income category Name" />
-                    <input type="hidden" name="categoryId" value="@Model.Incomes[i].Id" />
+                    <input asp-for="Categories[i].Name" placeholder="Income category Name" />
+                    <input type="hidden" name="categoryId" value="@Model.Categories[i].Id" />
                     <button type="submit" formaction="?handler=RemoveCategory">Remove Category</button>
                 </form>
                 <ul id="income-items-@i">
