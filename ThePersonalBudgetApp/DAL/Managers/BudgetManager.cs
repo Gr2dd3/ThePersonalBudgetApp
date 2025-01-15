@@ -21,8 +21,8 @@ public class BudgetManager : IBudgetManager
         try
         {
             var existingBudget = await _context.Budgets!
-                .Include(b => b.Categories)!
-                    .ThenInclude(c => c.Items)
+                .Include(b => b.Categories!)
+                    .ThenInclude(c => c.Items!)
                 .FirstOrDefaultAsync(b => b.Id == budget.Id);
 
             if (existingBudget != null)
@@ -81,7 +81,7 @@ public class BudgetManager : IBudgetManager
 
             await _context.Categories.AddAsync(category);
 
-            foreach (var item in category.Items)
+            foreach (var item in category.Items!)
             {
                 item.CategoryId = category.Id;
                 await _context.Items.AddAsync(item);
@@ -107,9 +107,9 @@ public class BudgetManager : IBudgetManager
             {
                 _context.Entry(existingCategory).CurrentValues.SetValues(newCategory);
 
-                foreach (var item in newCategory.Items)
+                foreach (var item in newCategory.Items!)
                 {
-                    var existingItem = existingCategory.Items.FirstOrDefault(i => i.Id == item.Id);
+                    var existingItem = existingCategory.Items!.FirstOrDefault(i => i.Id == item.Id);
                     if (existingItem != null)
                     {
                         _context.Entry(existingItem).CurrentValues.SetValues(item);
@@ -134,7 +134,7 @@ public class BudgetManager : IBudgetManager
 
                 await _context.Categories.AddAsync(newCategory);
 
-                foreach (var item in newCategory.Items)
+                foreach (var item in newCategory.Items!)
                 {
                     item.CategoryId = newCategory.Id;
                     await _context.Items.AddAsync(item);
@@ -256,7 +256,7 @@ public class BudgetManager : IBudgetManager
                     foreach (var income in incomes)
                     {
                         column.Item().Text($"- {income.Name}");
-                        foreach (var item in income.Items)
+                        foreach (var item in income.Items!)
                         {
                             column.Item().Text($"  * {item.Name}: {item.Amount:C}");
                         }
@@ -266,7 +266,7 @@ public class BudgetManager : IBudgetManager
                     foreach (var expense in expenses)
                     {
                         column.Item().Text($"- {expense.Name}");
-                        foreach (var item in expense.Items)
+                        foreach (var item in expense.Items!)
                         {
                             column.Item().Text($"  * {item.Name}: {item.Amount:C}");
                         }

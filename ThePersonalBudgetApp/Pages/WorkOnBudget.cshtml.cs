@@ -82,38 +82,13 @@ public class WorkOnBudgetModel : PageModel
             return Page();
         }
 
-        if (categoryType == "income")
+        SelectedBudget.Categories!.Add(new Category
         {
-            if (SelectedBudget.Incomes == null)
-            {
-                SelectedBudget.Incomes = new List<Category>();
-            }
-
-            SelectedBudget.Incomes.Add(new Category
-            {
-                Id = Guid.NewGuid(),
-                Name = "New Income",
-                Items = new List<Item>()
-            });
-        }
-        else if (categoryType == "expense")
-        {
-            if (SelectedBudget.Expenses == null || SelectedBudget.Expenses.Count < 1)
-            {
-                SelectedBudget.Expenses = new List<Category>();
-            }
-
-            SelectedBudget.Expenses.Add(new Category
-            {
-                Id = Guid.NewGuid(),
-                Name = "New Expense",
-                Items = new List<Item>()
-            });
-        }
-        else
-        {
-            throw new ArgumentException("Invalid category type.");
-        }
+            Id = Guid.NewGuid(),
+            Name = "New Category",
+            IsIncome = categoryType == "income" ? true : false,
+            Items = new List<Item>()
+        });
 
         return RedirectToPage();
     }
@@ -134,7 +109,7 @@ public class WorkOnBudgetModel : PageModel
 
     public IActionResult OnPostAddItem(Guid categoryId)
     {
-        var category = SelectedBudget!.Incomes!.Concat(SelectedBudget.Expenses!)
+        var category = SelectedBudget!.Categories!
             .FirstOrDefault(c => c.Id == categoryId);
         if (category != null)
         {
@@ -151,11 +126,10 @@ public class WorkOnBudgetModel : PageModel
             return Page();
         }
 
-        var removeItem = SelectedBudget?.Incomes?
-            .Concat(SelectedBudget.Expenses!)?
+        var removeItem = SelectedBudget?.Categories!
             .FirstOrDefault(x => x.Id == categoryId)?
             .Items![itemIndex];
-        
+
         if (removeItem is null)
         {
             return Page();
