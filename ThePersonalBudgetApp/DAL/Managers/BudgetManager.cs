@@ -20,8 +20,8 @@ public class BudgetManager : IBudgetManager
         //TODO: Delete budget from db and then make a sync - Add-Migration UpdatedOnModeling, Update-Database
         try
         {
-            var existingBudget = await _context.Budgets
-                .Include(b => b.Categories)
+            var existingBudget = await _context.Budgets!
+                .Include(b => b.Categories)!
                     .ThenInclude(c => c.Items)
                 .FirstOrDefaultAsync(b => b.Id == budget.Id);
 
