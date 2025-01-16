@@ -6,7 +6,7 @@ namespace ThePersonalBudgetApp.Pages;
 public class WorkOnBudgetModel : PageModel
 {
     private IBudgetManager _iBudgetManager;
-    private string _key = "selectedBudgetId";
+    private string _sessionKey = "selectedBudgetId";
     public WorkOnBudgetModel(IBudgetManager budgetManager)
     {
         if (_iBudgetManager == null)
@@ -31,10 +31,10 @@ public class WorkOnBudgetModel : PageModel
             IsWorkingOnBudget = false;
             SelectedBudget = null;
         }
-        else if (Guid.TryParse(Request.Form[_key], out Guid budgetId))
+        else if (Guid.TryParse(Request.Form[_sessionKey], out Guid budgetId))
         {
             SelectedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
-            HttpContext.Session.Set(_key, SelectedBudget.Id.ToByteArray());
+            HttpContext.Session.Set(_sessionKey, SelectedBudget.Id.ToByteArray());
             IsWorkingOnBudget = true;
         }
         else
@@ -53,7 +53,7 @@ public class WorkOnBudgetModel : PageModel
 
         if (SelectedBudget is not null)
         {
-            var budgetId = HttpContext.Session.Get(_key);
+            var budgetId = HttpContext.Session.Get(_sessionKey);
             if (budgetId != null && budgetId.Length == 16)
             {
                 SelectedBudget.Id = new Guid(budgetId);
