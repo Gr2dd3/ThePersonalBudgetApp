@@ -17,13 +17,16 @@ public class BudgetManager : IBudgetManager
 
         if (budget.Id == Guid.Empty)
             return;
-        //TODO: Delete budget from db and then make a sync - Add-Migration UpdatedOnModeling, Update-Database
         try
         {
-            var existingBudget = await _context.Budgets!
-                .Include(b => b.Categories!)
-                    .ThenInclude(c => c.Items!)
-                .FirstOrDefaultAsync(b => b.Id == budget.Id);
+        //TODO: Nånting blir fel här.
+            //var existingBudget = await _context.Budgets!
+            //    .Include(b => b.Categories!)
+            //        .ThenInclude(c => c.Items!)
+            //    .FirstOrDefaultAsync(b => b.Id == budget.Id);
+
+            var listOfBudgets = await FetchAllBudgetsAsync();
+            var existingBudget = listOfBudgets.FirstOrDefault(b => b.Id == budget.Id);
 
             if (existingBudget != null)
             {
@@ -197,8 +200,8 @@ public class BudgetManager : IBudgetManager
 
     public async Task<Budget> FetchBudgetAsync(Guid budgetId)
     {
-        var fetchedBudget = await _context.Budgets!
-            .Include(b => b.Categories!)
+        var fetchedBudget = await _context.Budgets
+            .Include(b => b.Categories)
                 .ThenInclude(c => c.Items)
             .FirstOrDefaultAsync(b => b.Id == budgetId);
 

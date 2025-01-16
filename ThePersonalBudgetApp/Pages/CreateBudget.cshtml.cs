@@ -67,18 +67,18 @@ namespace ThePersonalBudgetApp.Pages
             return Page();
         }
 
-        public IActionResult OnPostAddCategoryAsync(bool categoryType)
+        public IActionResult OnPostAddCategoryAsync(string categoryType)
         {
             if (CreatedBudget == null)
             {
                 return Page();
             }
 
-            CreatedBudget.Categories.Add(new Category()
+            CreatedBudget.Categories!.Add(new Category()
             {
                 Id = Guid.NewGuid(),
                 Name = "New Income",
-                IsIncome = categoryType,
+                IsIncome = categoryType == "income" ? true : false,
                 Items = new List<Item>()
             });
 

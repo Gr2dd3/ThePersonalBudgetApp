@@ -38,7 +38,7 @@
                             <input name="Categories[@i].Items[@j].Amount" value="@incomes[i].Items[j].Amount" placeholder="Amount" />
                             <form method="post">
                                 <input type="hidden" name="handler" value="RemoveItem" />
-                                <input type="hidden" name="isIncome" value="@true" />
+                                <input type="hidden" name="categoryType" value="income" />
                                 <input type="hidden" name="categoryId" value="@incomes[i].Id" />
                                 <input type="hidden" name="itemIndex" value="@j" />
                                 <button type="submit">Remove Item</button>
@@ -86,7 +86,7 @@
                     }
                 </ul>
                 <form method="post">
-                    <input type="hidden" name="isIncome" value="@false" />
+                    <input type="hidden" name="categoryType" value="expense" />
                     <input type="hidden" name="categoryId" value="@expenses[i].Id" />
                     <button type="submit" formaction="?handler=AddItem">Add Item</button>
                 </form>
