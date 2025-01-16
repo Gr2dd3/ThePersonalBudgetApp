@@ -67,7 +67,7 @@ namespace ThePersonalBudgetApp.Pages
             return Page();
         }
 
-        public IActionResult OnPostAddCategoryAsync(string categoryType)
+        public async Task<IActionResult> OnPostAddCategoryAsync(string categoryType)
         {
             if (CreatedBudget == null)
             {
@@ -83,7 +83,7 @@ namespace ThePersonalBudgetApp.Pages
             });
 
             // Save CreatedBudget
-            _ = OnPostSaveBudgetAsync();
+            await OnPostSaveBudgetAsync();
             return RedirectToPage();
         }
 

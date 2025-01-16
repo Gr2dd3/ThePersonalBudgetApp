@@ -37,10 +37,10 @@ public class Program
         app.UseHttpsRedirection();
         app.UseStaticFiles();
 
+        app.UseSession();
         app.UseRouting();
 
         app.UseAuthorization();
-        app.UseSession();
 
         app.MapRazorPages();
         app.MapDefaultControllerRoute();
