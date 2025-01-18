@@ -20,7 +20,7 @@ public class BudgetManager : IBudgetManager
 
         try
         {
-            var existingBudget = await GetBudgetByIdAsync(budget.Id);
+            Budget? existingBudget = await GetBudgetByIdAsync(budget.Id);
 
             if (existingBudget != null)
             {

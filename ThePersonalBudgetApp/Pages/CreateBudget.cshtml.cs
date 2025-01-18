@@ -39,19 +39,20 @@ namespace ThePersonalBudgetApp.Pages
             else
             {
                 //ID för CreatedBudget?
-                CreatedBudget = new Budget() 
-                { 
+                CreatedBudget = new Budget()
+                {
                     Id = Guid.NewGuid(),
                     Title = "Min Budget",
                     Description = "Beskrivning",
                     Categories = new List<Category>(),
 
                 };
+                _ = OnPostSaveBudgetAsync(CreatedBudget.Id);
                 _httpContextAccessor.HttpContext.Session.Set(_sessionKey, CreatedBudget.Id.ToByteArray());
             }
         }
 
-        public async Task<IActionResult> OnPostSaveBudgetAsync()
+        public async Task<IActionResult> OnPostSaveBudgetAsync(Guid? budgetId = null)
         {
             if (!ModelState.IsValid)
             {
@@ -64,11 +65,16 @@ namespace ThePersonalBudgetApp.Pages
                     CreatedBudget.Id = Guid.NewGuid();
                     _httpContextAccessor.HttpContext.Session.Set(_sessionKey, CreatedBudget.Id.ToByteArray());
                 }
+                else if (budgetId is not null)
+                {
+                    Guid confirmedId = (Guid)budgetId;
+                    _httpContextAccessor.HttpContext.Session.Set(_sessionKey, confirmedId.ToByteArray());
+                }
                 else
                 {
-                    CreatedBudget = await _globalMethods.FillUpSelectedBudgetAsync(_httpContextAccessor.HttpContext, _sessionKey);
-                }
+                    throw new Exception($"Unable to save budget with {CreatedBudget.Id}");
 
+                }
                 await _iBudgetManager.SaveBudgetAsync(CreatedBudget);
             }
 
