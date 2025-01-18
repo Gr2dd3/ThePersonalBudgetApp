@@ -38,8 +38,16 @@ namespace ThePersonalBudgetApp.Pages
             }
             else
             {
-                CreatedBudget!.Title = "Min Budget";
-                CreatedBudget.Description = "Beskrivning";
+                //ID för CreatedBudget?
+                CreatedBudget = new Budget() 
+                { 
+                    Id = Guid.NewGuid(),
+                    Title = "Min Budget",
+                    Description = "Beskrivning",
+                    Categories = new List<Category>(),
+
+                };
+                _httpContextAccessor.HttpContext.Session.Set(_sessionKey, CreatedBudget.Id.ToByteArray());
             }
         }
 
@@ -77,7 +85,7 @@ namespace ThePersonalBudgetApp.Pages
             CreatedBudget.Categories!.Add(new Category()
             {
                 Id = Guid.NewGuid(),
-                Name = "New Income",
+                Name = "New Category",
                 IsIncome = categoryType == "income" ? true : false,
                 Items = new List<Item>()
             });
