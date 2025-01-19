@@ -14,7 +14,10 @@ public class Program
         builder.Services.AddRazorPages();
 
         builder.Services.AddDbContext<BudgetDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+            {
+                sqlOptions.CommandTimeout(60);
+            }));
 
         builder.Services.AddDistributedMemoryCache();
         builder.Services.AddSession(options =>
@@ -24,13 +27,36 @@ public class Program
             options.Cookie.IsEssential = true;
         });
 
+
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
+        builder.Services.AddDbContext<BudgetDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+                   .EnableSensitiveDataLogging()
+                   .EnableDetailedErrors());
+
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
         {
-            app.UseExceptionHandler("/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+                    var exception = exceptionHandlerPathFeature?.Error;
+
+                    if (exception != null)
+                    {
+                        Console.WriteLine($"Unhandled exception: {exception.Message}");
+                        Console.WriteLine($"Stack trace: {exception.StackTrace}");
+                    }
+
+                    context.Response.Redirect("/Error");
+                });
+            });
             app.UseHsts();
         }
 

@@ -22,7 +22,7 @@ public class BudgetManager : IBudgetManager
         {
             Budget? existingBudget = await GetBudgetByIdAsync(budget.Id);
 
-            if (existingBudget != null)
+            if (existingBudget != null && existingBudget.Id != Guid.Empty)
             {
                 await UpdateBudgetAsync(budget, existingBudget);
             }
@@ -30,6 +30,10 @@ public class BudgetManager : IBudgetManager
             {
                 await AddNewBudgetAsync(budget);
             }
+        }
+        catch (TaskCanceledException ex)
+        {
+            throw new Exception("Operation canceled. Det kan bero på en timeout eller annullerad token.", ex);
         }
         catch (Exception ex)
         {
@@ -41,11 +45,22 @@ public class BudgetManager : IBudgetManager
 
     private async Task<Budget?> GetBudgetByIdAsync(Guid budgetId)
     {
-        return await _context.Budgets!
-            .Include(b => b.Categories!)
-                .ThenInclude(c => c.Items!)
-            .FirstOrDefaultAsync(b => b.Id == budgetId);
+        var canConnect = await _context.Database.CanConnectAsync();
+        if (!canConnect)
+            throw new Exception("Database connection failed.");
+        
+        try
+        {
+            return await _context.Budgets!
+                .FirstOrDefaultAsync(b => b.Id == budgetId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error querying database: {ex.Message}");
+            throw;
+        }
     }
+
 
     private async Task AddNewBudgetAsync(Budget newBudget)
     {
