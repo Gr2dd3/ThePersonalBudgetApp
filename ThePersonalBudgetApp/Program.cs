@@ -14,10 +14,13 @@ public class Program
         builder.Services.AddRazorPages();
 
         builder.Services.AddDbContext<BudgetDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .EnableSensitiveDataLogging()
-           .EnableDetailedErrors()
-        );
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+            {
+                sqlOptions.CommandTimeout(60);
+            })
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors());
+
 
         builder.Services.AddDistributedMemoryCache();
         builder.Services.AddSession(options =>
