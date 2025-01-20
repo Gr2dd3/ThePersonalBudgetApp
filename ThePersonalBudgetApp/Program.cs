@@ -8,7 +8,6 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddTransient<IBudgetManager, BudgetManager>();
-        builder.Services.AddTransient<GlobalMethods>();
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddRazorPages();

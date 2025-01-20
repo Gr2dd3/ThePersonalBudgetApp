@@ -14,19 +14,17 @@ namespace ThePersonalBudgetApp.Pages
         public List<Category> Expenses { get; set; } = new List<Category>();
 
         private IBudgetManager _iBudgetManager;
-        private GlobalMethods _globalMethods;
         private IHttpContextAccessor _httpContextAccessor;
         private string _sessionKey = "CreatedBudgetId";
-        public CreateBudgetModel(IBudgetManager iBudgetManager, GlobalMethods globalMethods, IHttpContextAccessor httpContextAccessor)
+        public CreateBudgetModel(IBudgetManager iBudgetManager, IHttpContextAccessor httpContextAccessor)
         {
             _iBudgetManager = iBudgetManager;
-            _globalMethods = globalMethods;
             _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task OnGet()
         {
-            var budget = await _globalMethods.FillUpSelectedBudgetAsync(_httpContextAccessor.HttpContext, _sessionKey);
+            var budget = await GlobalMethods.FillUpSelectedBudgetAsync(_httpContextAccessor.HttpContext, _sessionKey, _iBudgetManager);
             if (budget!.Id != Guid.Empty)
             {
                 CreatedBudget = budget;

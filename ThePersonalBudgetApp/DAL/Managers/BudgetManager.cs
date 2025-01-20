@@ -1,10 +1,12 @@
-﻿using ThePersonalBudgetApp.DAL.Models;
+﻿using Microsoft.Extensions.Options;
+using ThePersonalBudgetApp.DAL.Models;
 
 namespace ThePersonalBudgetApp.DAL.Managers;
 
 public class BudgetManager : IBudgetManager
 {
-    BudgetDbContext _context;
+    private BudgetDbContext _context;
+
     public BudgetManager(BudgetDbContext context)
     {
         _context = context;
@@ -17,6 +19,8 @@ public class BudgetManager : IBudgetManager
 
         if (budget.Id == Guid.Empty)
             return;
+
+        GlobalMethods.TestingDbConnection(_context).Wait();
 
         try
         {
@@ -46,10 +50,6 @@ public class BudgetManager : IBudgetManager
 
     private async Task<Budget?> GetBudgetByIdAsync(Guid budgetId)
     {
-        var canConnect = await _context.Database.CanConnectAsync();
-        if (!canConnect)
-            throw new Exception("Database connection failed.");
-        
         try
         {
             return await _context.Budgets!
