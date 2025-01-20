@@ -14,10 +14,10 @@ public class Program
         builder.Services.AddRazorPages();
 
         builder.Services.AddDbContext<BudgetDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
-            {
-                sqlOptions.CommandTimeout(60);
-            }));
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .EnableSensitiveDataLogging()
+           .EnableDetailedErrors()
+        );
 
         builder.Services.AddDistributedMemoryCache();
         builder.Services.AddSession(options =>
@@ -30,10 +30,6 @@ public class Program
 
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
-        builder.Services.AddDbContext<BudgetDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-                   .EnableSensitiveDataLogging()
-                   .EnableDetailedErrors());
 
 
         var app = builder.Build();

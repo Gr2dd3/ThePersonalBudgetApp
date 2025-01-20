@@ -20,6 +20,7 @@ public class BudgetManager : IBudgetManager
 
         try
         {
+            // Try fetching only id from db?
             Budget? existingBudget = await GetBudgetByIdAsync(budget.Id);
 
             if (existingBudget != null && existingBudget.Id != Guid.Empty)
