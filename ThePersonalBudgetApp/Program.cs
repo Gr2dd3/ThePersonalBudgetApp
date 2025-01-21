@@ -7,7 +7,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddTransient<IBudgetManager, BudgetManager>();
+        builder.Services.AddScoped<IBudgetManager, BudgetManager>();
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddRazorPages();
@@ -17,6 +17,7 @@ public class Program
             {
                 sqlOptions.CommandTimeout(60);
             })
+            // Remove these in production:
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors());
 

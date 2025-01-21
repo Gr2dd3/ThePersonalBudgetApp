@@ -7,7 +7,7 @@ namespace ThePersonalBudgetApp.Pages
     public class CreateBudgetModel : PageModel
     {
         [BindProperty]
-        public Budget CreatedBudget { get; set; } = new Budget();
+        public Budget CreatedBudget { get; set; }
 
         // TODO: Include Incomes and Expenses list to pageview 
         public List<Category> Incomes { get; set; } = new List<Category>();

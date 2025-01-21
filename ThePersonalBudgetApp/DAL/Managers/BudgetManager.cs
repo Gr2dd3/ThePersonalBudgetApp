@@ -20,7 +20,7 @@ public class BudgetManager : IBudgetManager
         if (budget.Id == Guid.Empty)
             return;
 
-        GlobalMethods.TestingDbConnection(_context).Wait();
+        await GlobalMethods.TestingDbConnectionAsync(_context);
 
         try
         {
@@ -65,24 +65,23 @@ public class BudgetManager : IBudgetManager
 
     private async Task AddNewBudgetAsync(Budget newBudget)
     {
-        using (var transaction = await _context.Database.BeginTransactionAsync())
+        var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            try
-            {
-                await _context.Budgets.AddAsync(newBudget);
-                await _context.SaveChangesAsync();
+            await _context.Budgets.AddAsync(newBudget);
+            await _context.SaveChangesAsync();
 
-                await SaveCategoriesWithItemsAsync(newBudget.Categories!, newBudget.Id);
+            await SaveCategoriesWithItemsAsync(newBudget.Categories!, newBudget.Id);
 
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
         }
     }
+
 
     private async Task UpdateBudgetAsync(Budget updatedBudget, Budget existingBudget)
     {
