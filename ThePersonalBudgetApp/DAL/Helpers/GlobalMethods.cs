@@ -36,25 +36,4 @@ public static class GlobalMethods
 
         return Guid.Empty;
     }
-
-    public static async Task TestingDbConnectionAsync(DbContext context)
-    {
-        try
-        {
-            var canConnect = await context.Database.CanConnectAsync();
-            if (!canConnect)
-            {
-                Console.WriteLine("Connection failed.");
-            }
-            else
-            {
-                Console.WriteLine("Connection is open.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error while checking database connection: {ex.Message}");
-        }
-    }
-
 }

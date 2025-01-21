@@ -5,7 +5,7 @@ namespace ThePersonalBudgetApp.DAL.Managers;
 
 public class BudgetManager : IBudgetManager
 {
-    private BudgetDbContext _context;
+    private readonly BudgetDbContext _context;
 
     public BudgetManager(BudgetDbContext context)
     {
@@ -20,7 +20,7 @@ public class BudgetManager : IBudgetManager
         if (budget.Id == Guid.Empty)
             return;
 
-        await GlobalMethods.TestingDbConnectionAsync(_context);
+        await TestingDbConnectionAsync();
 
         try
         {
@@ -46,145 +46,6 @@ public class BudgetManager : IBudgetManager
         }
     }
 
-    #region Private Methods
-
-    private async Task<Budget?> GetBudgetByIdAsync(Guid budgetId)
-    {
-        try
-        {
-            return await _context.Budgets!
-                .FirstOrDefaultAsync(b => b.Id == budgetId);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error querying database: {ex.Message}");
-            throw;
-        }
-    }
-
-
-    private async Task AddNewBudgetAsync(Budget newBudget)
-    {
-        var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            await _context.Budgets.AddAsync(newBudget);
-            await _context.SaveChangesAsync();
-
-            await SaveCategoriesWithItemsAsync(newBudget.Categories!, newBudget.Id);
-
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-    }
-
-
-    private async Task UpdateBudgetAsync(Budget updatedBudget, Budget existingBudget)
-    {
-        using (var transaction = await _context.Database.BeginTransactionAsync())
-        {
-            try
-            {
-                _context.Entry(existingBudget).CurrentValues.SetValues(updatedBudget);
-
-                await UpdateCategoriesWithItemsAsync(updatedBudget.Categories!, existingBudget.Categories!, updatedBudget.Id);
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-    }
-
-    private async Task SaveCategoriesWithItemsAsync(IEnumerable<Category> categories, Guid budgetId)
-    {
-        foreach (var category in categories)
-        {
-            category.BudgetId = budgetId;
-            await _context.Categories.AddAsync(category);
-
-            foreach (var item in category.Items!)
-            {
-                item.CategoryId = category.Id;
-                await _context.Items.AddAsync(item);
-            }
-        }
-    }
-
-    private async Task UpdateCategoriesWithItemsAsync(IEnumerable<Category> updatedCategories, IEnumerable<Category> existingCategories, Guid budgetId)
-    {
-        foreach (var existingCategory in existingCategories)
-        {
-            if (!updatedCategories.Any(c => c.Id == existingCategory.Id))
-            {
-                _context.Categories.Remove(existingCategory);
-            }
-        }
-
-        foreach (var updatedCategory in updatedCategories)
-        {
-            var existingCategory = existingCategories.FirstOrDefault(c => c.Id == updatedCategory.Id);
-
-            if (existingCategory != null)
-            {
-                await UpdateExistingCategoryWithItemsAsync(updatedCategory, existingCategory);
-            }
-            else
-            {
-                updatedCategory.BudgetId = budgetId;
-                await AddNewCategoryWithItemsAsync(updatedCategory);
-            }
-        }
-    }
-
-    private async Task UpdateExistingCategoryWithItemsAsync(Category updatedCategory, Category existingCategory)
-    {
-        _context.Entry(existingCategory).CurrentValues.SetValues(updatedCategory);
-
-        foreach (var updatedItem in updatedCategory.Items!)
-        {
-            var existingItem = existingCategory.Items!.FirstOrDefault(i => i.Id == updatedItem.Id);
-
-            if (existingItem != null)
-            {
-                _context.Entry(existingItem).CurrentValues.SetValues(updatedItem);
-            }
-            else
-            {
-                updatedItem.CategoryId = updatedCategory.Id;
-                await _context.Items.AddAsync(updatedItem);
-            }
-        }
-
-        foreach (var existingItem in existingCategory.Items!.ToList())
-        {
-            if (!updatedCategory.Items!.Any(i => i.Id == existingItem.Id))
-            {
-                _context.Items.Remove(existingItem);
-            }
-        }
-    }
-
-    private async Task AddNewCategoryWithItemsAsync(Category newCategory)
-    {
-        await _context.Categories.AddAsync(newCategory);
-
-        foreach (var item in newCategory.Items!)
-        {
-            item.CategoryId = newCategory.Id;
-            await _context.Items.AddAsync(item);
-        }
-    }
-
-    #endregion
 
 
 
@@ -325,4 +186,168 @@ public class BudgetManager : IBudgetManager
 
     }
 
+
+
+    #region Private Methods
+
+    #region Save Methods
+
+    private async Task<Budget?> GetBudgetByIdAsync(Guid budgetId)
+    {
+        try
+        {
+            return await _context.Budgets!
+                .FirstOrDefaultAsync(b => b.Id == budgetId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error querying database: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task AddNewBudgetAsync(Budget newBudget)
+    {
+        var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await _context.Budgets.AddAsync(newBudget);
+            await _context.SaveChangesAsync();
+
+            await SaveCategoriesWithItemsAsync(newBudget.Categories!, newBudget.Id);
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    private async Task UpdateBudgetAsync(Budget updatedBudget, Budget existingBudget)
+    {
+        using (var transaction = await _context.Database.BeginTransactionAsync())
+        {
+            try
+            {
+                _context.Entry(existingBudget).CurrentValues.SetValues(updatedBudget);
+
+                await UpdateCategoriesWithItemsAsync(updatedBudget.Categories!, existingBudget.Categories!, updatedBudget.Id);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
+
+    private async Task SaveCategoriesWithItemsAsync(IEnumerable<Category> categories, Guid budgetId)
+    {
+        foreach (var category in categories)
+        {
+            category.BudgetId = budgetId;
+            await _context.Categories.AddAsync(category);
+
+            foreach (var item in category.Items!)
+            {
+                item.CategoryId = category.Id;
+                await _context.Items.AddAsync(item);
+            }
+        }
+    }
+
+    private async Task UpdateCategoriesWithItemsAsync(IEnumerable<Category> updatedCategories, IEnumerable<Category> existingCategories, Guid budgetId)
+    {
+        foreach (var existingCategory in existingCategories)
+        {
+            if (!updatedCategories.Any(c => c.Id == existingCategory.Id))
+            {
+                _context.Categories.Remove(existingCategory);
+            }
+        }
+
+        foreach (var updatedCategory in updatedCategories)
+        {
+            var existingCategory = existingCategories.FirstOrDefault(c => c.Id == updatedCategory.Id);
+
+            if (existingCategory != null)
+            {
+                await UpdateExistingCategoryWithItemsAsync(updatedCategory, existingCategory);
+            }
+            else
+            {
+                updatedCategory.BudgetId = budgetId;
+                await AddNewCategoryWithItemsAsync(updatedCategory);
+            }
+        }
+    }
+
+    private async Task UpdateExistingCategoryWithItemsAsync(Category updatedCategory, Category existingCategory)
+    {
+        _context.Entry(existingCategory).CurrentValues.SetValues(updatedCategory);
+
+        foreach (var updatedItem in updatedCategory.Items!)
+        {
+            var existingItem = existingCategory.Items!.FirstOrDefault(i => i.Id == updatedItem.Id);
+
+            if (existingItem != null)
+            {
+                _context.Entry(existingItem).CurrentValues.SetValues(updatedItem);
+            }
+            else
+            {
+                updatedItem.CategoryId = updatedCategory.Id;
+                await _context.Items.AddAsync(updatedItem);
+            }
+        }
+
+        foreach (var existingItem in existingCategory.Items!.ToList())
+        {
+            if (!updatedCategory.Items!.Any(i => i.Id == existingItem.Id))
+            {
+                _context.Items.Remove(existingItem);
+            }
+        }
+    }
+
+    private async Task AddNewCategoryWithItemsAsync(Category newCategory)
+    {
+        await _context.Categories.AddAsync(newCategory);
+
+        foreach (var item in newCategory.Items!)
+        {
+            item.CategoryId = newCategory.Id;
+            await _context.Items.AddAsync(item);
+        }
+    }
+
+    #endregion
+
+    private async Task TestingDbConnectionAsync()
+    {
+        try
+        {
+            var canConnect = await _context.Database.CanConnectAsync();
+            if (!canConnect)
+            {
+                Console.WriteLine("Connection failed.");
+            }
+            else
+            {
+                Console.WriteLine("Connection is open.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while checking database connection: {ex.Message}");
+        }
+    }
+
+
+    #endregion
 }
