@@ -4,20 +4,16 @@ namespace ThePersonalBudgetApp.DAL.Helpers;
 
 public static class GlobalMethods
 {
-    public static async Task<Budget?> FillUpSelectedBudgetAsync(HttpContext? httpContext = null, string? key = null, IBudgetManager? iBudgetManager = null)
+    public static Guid CanFillUpSelectedBudgetAsync(HttpContext? httpContext = null, string? key = null)
     {
         if (key == null || httpContext == null)
-            return null;
+            return Guid.Empty;
 
         var budgetId = RetrieveGuidIdFromSession(httpContext, key);
-        Budget? budget = null;
         if (budgetId != Guid.Empty)
-            budget = await iBudgetManager.FetchBudgetAsync(budgetId);
+            return budgetId;
 
-        if (budget == null)
-            return new Budget();
-
-        return budget;
+        return Guid.Empty;
     }
 
     public static Guid RetrieveGuidIdFromSession(HttpContext? httpContext, string? key = null)
@@ -36,4 +32,20 @@ public static class GlobalMethods
 
         return Guid.Empty;
     }
+
+    //public static async Task<Budget?> FillUpSelectedBudgetAsync(HttpContext? httpContext = null, string? key = null, IBudgetManager? iBudgetManager = null)
+    //{
+    //    if (key == null || httpContext == null)
+    //        return null;
+
+    //    var budgetId = RetrieveGuidIdFromSession(httpContext, key);
+    //    Budget? budget = null;
+    //    if (budgetId != Guid.Empty)
+    //        budget = await iBudgetManager.FetchBudgetAsync(budgetId);
+
+    //    if (budget == null)
+    //        return new Budget();
+
+    //    return budget;
+    //}
 }

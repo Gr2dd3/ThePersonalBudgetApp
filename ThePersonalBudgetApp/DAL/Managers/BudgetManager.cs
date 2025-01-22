@@ -1,15 +1,16 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using ThePersonalBudgetApp.DAL.Models;
 
 namespace ThePersonalBudgetApp.DAL.Managers;
 
 public class BudgetManager : IBudgetManager
 {
-    private readonly BudgetDbContext _context;
+    private BudgetDbContext _context;
 
     public BudgetManager(BudgetDbContext context)
     {
-        _context = context;
+        _context = context ?? throw new ArgumentNullException(nameof(BudgetDbContext));
     }
     // TODO: Se till att existerande budget sparar ordentligt. 
     public async Task SaveBudgetAsync(Budget budget)
@@ -20,29 +21,33 @@ public class BudgetManager : IBudgetManager
         if (budget.Id == Guid.Empty)
             return;
 
-        await TestingDbConnectionAsync();
+        Thread.Sleep(500);
+        bool canConnect = await _context.Database.CanConnectAsync();
 
-        try
+        if (canConnect)
         {
-            // Try fetching only id from db?
-            Budget? existingBudget = await GetBudgetByIdAsync(budget.Id);
+            try
+            {
+                // Try fetching only id from db?
+                Budget? existingBudget = await GetBudgetByIdAsync(budget.Id);
 
-            if (existingBudget != null && existingBudget.Id != Guid.Empty)
-            {
-                await UpdateBudgetAsync(budget, existingBudget);
+                if (existingBudget != null && existingBudget.Id != Guid.Empty)
+                {
+                    await UpdateBudgetAsync(budget, existingBudget);
+                }
+                else
+                {
+                    await AddNewBudgetAsync(budget);
+                }
             }
-            else
+            catch (TaskCanceledException ex)
             {
-                await AddNewBudgetAsync(budget);
+                throw new Exception("Operation canceled. Det kan bero på en timeout eller annullerad token.", ex);
             }
-        }
-        catch (TaskCanceledException ex)
-        {
-            throw new Exception("Operation canceled. Det kan bero på en timeout eller annullerad token.", ex);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("An error occurred while saving the budget.", ex);
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while saving the budget.", ex);
+            }
         }
     }
 
@@ -328,25 +333,25 @@ public class BudgetManager : IBudgetManager
 
     #endregion
 
-    private async Task TestingDbConnectionAsync()
-    {
-        try
-        {
-            var canConnect = await _context.Database.CanConnectAsync();
-            if (!canConnect)
-            {
-                Console.WriteLine("Connection failed.");
-            }
-            else
-            {
-                Console.WriteLine("Connection is open.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error while checking database connection: {ex.Message}");
-        }
-    }
+    //private async Task TestingDbConnectionAsync()
+    //{
+    //    try
+    //    {
+    //        var canConnect = await _context.Database.CanConnectAsync();
+    //        if (!canConnect)
+    //        {
+    //            Console.WriteLine("Connection failed.");
+    //        }
+    //        else
+    //        {
+    //            Console.WriteLine("Connection is open.");
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine($"Error while checking database connection: {ex.Message}");
+    //    }
+    //}
 
 
     #endregion

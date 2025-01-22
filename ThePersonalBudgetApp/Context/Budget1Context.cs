@@ -6,7 +6,16 @@ public class BudgetDbContext : DbContext
     public DbSet<Category> Categories { get; set; }
     public DbSet<Item> Items { get; set; }
 
-    public BudgetDbContext(DbContextOptions<BudgetDbContext> options) : base(options) { }
+    public BudgetDbContext(DbContextOptions<BudgetDbContext> options) : base(options)
+    {
+        Console.WriteLine("BudgetDbContext created");
+    }
+
+    public override void Dispose()
+    {
+        Console.WriteLine("BudgetDbContext disposed");
+        base.Dispose();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

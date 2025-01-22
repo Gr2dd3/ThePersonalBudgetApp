@@ -19,15 +19,15 @@ namespace ThePersonalBudgetApp.Pages
         public CreateBudgetModel(IBudgetManager iBudgetManager, IHttpContextAccessor httpContextAccessor)
         {
             _iBudgetManager = iBudgetManager;
-            _httpContextAccessor = httpContextAccessor;
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task OnGet()
         {
-            var budget = await GlobalMethods.FillUpSelectedBudgetAsync(_httpContextAccessor.HttpContext, _sessionKey, _iBudgetManager);
-            if (budget!.Id != Guid.Empty)
+            var budgetId = GlobalMethods.CanFillUpSelectedBudgetAsync(_httpContextAccessor.HttpContext, _sessionKey);
+            if (budgetId != Guid.Empty)
             {
-                CreatedBudget = budget;
+                CreatedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
                 if (CreatedBudget != null)
                 {
                     Incomes = CreatedBudget.Categories!.Where(c => c.IsIncome).ToList();
