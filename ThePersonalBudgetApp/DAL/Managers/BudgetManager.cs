@@ -93,7 +93,7 @@ public class BudgetManager : IBudgetManager
                 }
                 else
                 {
-                    if (category.Items is not null || category.Items?.Count == 0)
+                    if (category.Items is not null || category.Items?.Count > 0)
                     {
                         context.Items.RemoveRange(category.Items);
                     }

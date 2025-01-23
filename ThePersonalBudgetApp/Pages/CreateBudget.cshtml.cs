@@ -20,7 +20,7 @@ public class CreateBudgetModel : PageModel
 
     public async Task OnGet()
     {
-        var budgetId = GlobalMethods.CanFillUpSelectedBudgetAsync(_httpContextAccessor.HttpContext, _sessionKey);
+        var budgetId = GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
         if (budgetId != Guid.Empty)
         {
             CreatedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
@@ -40,7 +40,7 @@ public class CreateBudgetModel : PageModel
                 Categories = new List<Category>(),
 
             };
-            _ = OnPostSaveBudgetAsync(CreatedBudget.Id);
+            await OnPostSaveBudgetAsync(CreatedBudget.Id);
             //_httpContextAccessor.HttpContext.Session.Set(_sessionKey, CreatedBudget.Id.ToByteArray());
         }
     }
@@ -71,7 +71,7 @@ public class CreateBudgetModel : PageModel
             await _iBudgetManager.SaveBudgetAsync(CreatedBudget);
         }
 
-        return Page();
+        return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostAddCategoryAsync(string categoryType)
@@ -89,8 +89,7 @@ public class CreateBudgetModel : PageModel
             Items = new List<Item>()
         });
 
-        // Save CreatedBudget
-        await OnPostSaveBudgetAsync();
+        await Save();
         return RedirectToPage();
     }
 
@@ -103,10 +102,10 @@ public class CreateBudgetModel : PageModel
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId, item: null);
         CreatedBudget = _iBudgetManager.ReloadBudget(CreatedBudget);
-        return Page();
+        return RedirectToPage();
     }
 
-    public IActionResult OnPostAddItem(Guid categoryId)
+    public async Task<IActionResult> OnPostAddItem(Guid categoryId)
     {
         var category = CreatedBudget.Categories!
             .FirstOrDefault(c => c.Id == categoryId);
@@ -115,7 +114,9 @@ public class CreateBudgetModel : PageModel
             category.Items!.Add(new Item { Name = "New Item", Amount = 0 });
         }
 
-        return Page();
+        await Save();
+
+        return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostRemoveItemAsync(Guid categoryId, int itemIndex)
@@ -135,7 +136,15 @@ public class CreateBudgetModel : PageModel
         }
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId: null, removeItem);
+        CreatedBudget.Id = GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
         CreatedBudget = _iBudgetManager.ReloadBudget(CreatedBudget!);
-        return Page();
+        return RedirectToPage();
+    }
+
+
+    private async Task Save()
+    {
+        CreatedBudget.Id = GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
+        await OnPostSaveBudgetAsync(CreatedBudget.Id);
     }
 }
