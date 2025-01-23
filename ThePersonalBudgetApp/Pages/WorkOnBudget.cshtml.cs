@@ -6,11 +6,12 @@ namespace ThePersonalBudgetApp.Pages;
 public class WorkOnBudgetModel : PageModel
 {
     private IBudgetManager _iBudgetManager;
+    private IHttpContextAccessor _httpContextAccessor;
     private string _sessionKey = "selectedBudgetId";
-    public WorkOnBudgetModel(IBudgetManager budgetManager)
+    public WorkOnBudgetModel(IBudgetManager budgetManager, IHttpContextAccessor httpContextAccessor)
     {
-        if (_iBudgetManager == null)
-            _iBudgetManager = budgetManager;
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+        _iBudgetManager = budgetManager;
     }
 
     public bool IsWorkingOnBudget { get; set; }
@@ -34,17 +35,17 @@ public class WorkOnBudgetModel : PageModel
         else if (Guid.TryParse(Request.Form[_sessionKey], out Guid budgetId))
         {
             SelectedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
-            HttpContext.Session.Set(_sessionKey, SelectedBudget.Id.ToByteArray());
+            SetId(budgetId);
             IsWorkingOnBudget = true;
         }
         else
         {
             throw new Exception("Invalid handler.");
         }
-        return Page();
+        return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostSaveBudgetAsync()
+    public async Task<IActionResult> OnPostSaveBudgetAsync(Guid? budgetId = null)
     {
         if (!ModelState.IsValid)
         {
@@ -53,29 +54,26 @@ public class WorkOnBudgetModel : PageModel
 
         if (SelectedBudget is not null)
         {
-            var budgetId = HttpContext.Session.Get(_sessionKey);
-            if (budgetId != null && budgetId.Length == 16)
-            {
-                SelectedBudget.Id = new Guid(budgetId);
-            }
-            // Is every method persistant against Page Reload? Save in end of every method?
-            //Is there a need to fill up budget in OnGet?
-            // Is budget filled?
+            if (budgetId == null)
+                budgetId = GetId();
+
+            Guid confirmedId = (Guid)budgetId;
+            SelectedBudget.Id = budgetId == Guid.Empty ? Guid.NewGuid() : confirmedId;
+
+
             await _iBudgetManager.SaveBudgetAsync(SelectedBudget);
         }
 
         return RedirectToPage();
     }
 
-    public async Task OnPostDeleteBudgetAsync()
+    public async Task<IActionResult> OnPostDeleteBudgetAsync(Guid deleteBudgetId)
     {
-        if (Guid.TryParse(Request.Form["deleteBudgetId"], out Guid deleteBudgetId))
-        {
-            await _iBudgetManager.DeleteBudgetAsync(deleteBudgetId);
-        }
+        await _iBudgetManager.DeleteBudgetAsync(deleteBudgetId);
+        return RedirectToPage();
     }
 
-    public IActionResult OnPostAddCategoryAsync(string categoryType)
+    public async Task<IActionResult> OnPostAddCategoryAsync(string categoryType)
     {
         if (SelectedBudget == null)
         {
@@ -90,6 +88,7 @@ public class WorkOnBudgetModel : PageModel
             Items = new List<Item>()
         });
 
+        await Save();
         return RedirectToPage();
     }
 
@@ -107,16 +106,17 @@ public class WorkOnBudgetModel : PageModel
         return RedirectToPage();
     }
 
-    public IActionResult OnPostAddItem(Guid categoryId)
+    public async Task<IActionResult> OnPostAddItem(Guid? categoryId)
     {
-        var category = SelectedBudget!.Categories!
-            .FirstOrDefault(c => c.Id == categoryId);
-        if (category != null)
+        if (categoryId != null)
         {
-            category.Items!.Add(new Item { Name = "New Item", Amount = 0 });
+            var category = SelectedBudget!.Categories!
+                .FirstOrDefault(c => c.Id == categoryId);
+            if (category != null)
+                category.Items!.Add(new Item { Name = "New Item", Amount = 0 });
         }
-
-        return Page();
+        await Save();
+        return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostRemoveItemAsync(Guid categoryId, int itemIndex)
@@ -138,8 +138,19 @@ public class WorkOnBudgetModel : PageModel
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId: null, removeItem);
         SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget!);
         IsWorkingOnBudget = true;
-        return Page();
+        return RedirectToPage();
     }
 
+    #region Private Methods
+
+    private async Task Save()
+    {
+        SelectedBudget.Id = GetId();
+        await OnPostSaveBudgetAsync(SelectedBudget.Id);
+    }
+    private void SetId(Guid id) => _httpContextAccessor?.HttpContext?.Session.Set(_sessionKey, id.ToByteArray());
+    private Guid GetId() => GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
+
+    #endregion
 
 }

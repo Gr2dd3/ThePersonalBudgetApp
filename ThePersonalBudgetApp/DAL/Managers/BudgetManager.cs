@@ -2,22 +2,7 @@
 
 public class BudgetManager : IBudgetManager
 {
-    //private BudgetDbContext _context;
 
-    public BudgetManager()
-    {
-        //_context = context ?? throw new ArgumentNullException(nameof(BudgetDbContext));
-    }
-
-    //public async Task InvokeAsync(HttpContext httpContext, IBudgetManager manager, Budget? budget = null)
-    //{
-    //    if (budget != null)
-    //    {
-    //        await manager.SaveBudgetAsync(budget);
-    //    }
-    //    await _next(httpContext);
-    //}
-    // TODO: Se till att existerande budget sparar ordentligt. 
     public async Task SaveBudgetAsync(Budget budget)
     {
         if (budget == null)
@@ -89,7 +74,8 @@ public class BudgetManager : IBudgetManager
 
                 if (category is null)
                 {
-                    throw new NullReferenceException("Category not found.");
+                    Console.Error.WriteLine("Category is null in BudgetManager.DeleteBudgetCategoryOrItemAsync");
+                    return;
                 }
                 else
                 {

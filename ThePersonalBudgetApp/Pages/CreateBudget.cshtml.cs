@@ -56,12 +56,12 @@ public class CreateBudgetModel : PageModel
             if (CreatedBudget.Id == Guid.Empty)
             {
                 CreatedBudget.Id = Guid.NewGuid();
-                _httpContextAccessor?.HttpContext?.Session.Set(_sessionKey, CreatedBudget.Id.ToByteArray());
+                SetId(CreatedBudget.Id);
             }
             else if (budgetId is not null)
             {
                 Guid confirmedId = (Guid)budgetId;
-                _httpContextAccessor?.HttpContext?.Session.Set(_sessionKey, confirmedId.ToByteArray());
+                SetId(confirmedId);
             }
             else
             {
@@ -149,6 +149,7 @@ public class CreateBudgetModel : PageModel
         await OnPostSaveBudgetAsync(CreatedBudget.Id);
     }
 
+    private void SetId(Guid id) => _httpContextAccessor?.HttpContext?.Session.Set(_sessionKey, id.ToByteArray());
     private Guid GetId() => GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
 
     #endregion
