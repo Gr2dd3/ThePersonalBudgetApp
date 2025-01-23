@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ThePersonalBudgetApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+659f6ec5a5edd997bfe56f0f8b75fea3ba85b021")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5bf1a3f3005ca96b3f3e417e72e99696fa0cda45")]
 [assembly: System.Reflection.AssemblyProductAttribute("ThePersonalBudgetApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ThePersonalBudgetApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

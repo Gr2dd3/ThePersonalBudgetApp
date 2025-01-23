@@ -12,14 +12,15 @@ public class Program
 
         builder.Services.AddRazorPages();
 
-        builder.Services.AddDbContext<BudgetDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
-            {
-                sqlOptions.CommandTimeout(60);
-            })
-            // Remove these in production:
-            .EnableSensitiveDataLogging()
-            .EnableDetailedErrors());
+        ////Currently not using DI, to see whats wrong with db connection
+        //builder.Services.AddDbContext<BudgetDbContext>(options =>
+        //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+        //    {
+        //        sqlOptions.CommandTimeout(60);
+        //    })
+        //    // Remove these in production:
+        //    .EnableSensitiveDataLogging()
+        //    .EnableDetailedErrors());
 
 
         builder.Services.AddDistributedMemoryCache();

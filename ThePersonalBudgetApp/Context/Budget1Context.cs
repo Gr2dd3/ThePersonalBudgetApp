@@ -12,6 +12,28 @@ public class BudgetDbContext : DbContext
     public BudgetDbContext()
     {
     }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            // Load connection string from appsettings.json
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            optionsBuilder
+                .UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.CommandTimeout(60);
+                })
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors(); // Remove in production
+        }
+    }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
