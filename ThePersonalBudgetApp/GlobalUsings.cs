@@ -12,4 +12,5 @@ global using Document = QuestPDF.Fluent.Document;
 global using QuestPDF.Helpers;
 global using System.Reflection.Metadata;
 global using Newtonsoft.Json;
+global using Microsoft.Extensions.Options;
 

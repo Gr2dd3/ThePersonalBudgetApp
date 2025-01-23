@@ -4,6 +4,7 @@ namespace ThePersonalBudgetApp.DAL.Helpers;
 
 public static class GlobalMethods
 {
+    // Change name to GetBudgetIdFromSessionAsync. Make it to one method
     public static Guid CanFillUpSelectedBudgetAsync(HttpContext? httpContext = null, string? key = null)
     {
         if (key == null || httpContext == null)

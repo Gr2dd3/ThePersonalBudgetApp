@@ -10,4 +10,5 @@ public interface IBudgetManager
 
     Budget ReloadBudget(Budget budget);
     void PrintPDF(Budget budget);
+    //Task InvokeAsync(HttpContext httpContext, IBudgetManager manager, Budget? budget = null);
 }
