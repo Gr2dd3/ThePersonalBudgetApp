@@ -10,5 +10,7 @@ public interface IBudgetManager
 
     Budget ReloadBudget(Budget budget);
     void PrintPDF(Budget budget);
+    Task SaveCategoryAsync(Guid? categoryId, string categoryName);
+    Task SaveItemAsync(Guid categoryId, string? itemName = null, float? amount = 0);
     //Task InvokeAsync(HttpContext httpContext, IBudgetManager manager, Budget? budget = null);
 }

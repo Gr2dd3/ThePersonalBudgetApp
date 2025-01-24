@@ -74,6 +74,17 @@ public class CreateBudgetModel : PageModel
         return RedirectToPage();
     }
 
+    public async Task<IActionResult> OnPostAddCategoryNameAsync(Guid categoryId, string categoryName)
+    {
+        if (!ModelState.IsValid)
+            return Page();
+
+        await _iBudgetManager.SaveCategoryAsync(categoryId, categoryName);
+        CreatedBudget = _iBudgetManager.ReloadBudget(CreatedBudget);
+
+        return RedirectToPage();
+    }
+
     public async Task<IActionResult> OnPostAddCategoryAsync(string categoryType)
     {
         if (CreatedBudget == null)
@@ -93,7 +104,7 @@ public class CreateBudgetModel : PageModel
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId)
+    public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId, string? categoryName = null)
     {
         if (CreatedBudget == null)
         {

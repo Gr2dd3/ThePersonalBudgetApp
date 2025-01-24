@@ -3,6 +3,27 @@
 public class BudgetManager : IBudgetManager
 {
 
+    public async Task SaveCategoryAsync(Guid? categoryId, string categoryName)
+    {
+        using (var context = new BudgetDbContext())
+        {
+            var category = await context.Categories.Where(c => c.Id == categoryId).FirstOrDefaultAsync();
+            if (category == null)
+            {
+                Console.Error.WriteLine("Could not find a category in BudgetManager.SaveCategoryAsync");
+                return;
+            }
+            category.Name = categoryName;
+
+            await context.SaveChangesAsync();
+        }
+    }
+    public async Task SaveItemAsync(Guid categoryId, string? itemName = null, float? amount = 0)
+    {
+        new NotImplementedException();
+    }
+
+
     public async Task SaveBudgetAsync(Budget budget)
     {
         if (budget == null)

@@ -26,8 +26,9 @@
         {
             <div>
                 <form method="post">
-                    <input name="Categories[@i].Name" value="@incomes[i].Name" placeholder="Income category Name" />
+                    <input type="hidden" name="categoryName" value="@incomes[i].Name" />
                     <input type="hidden" name="categoryId" value="@incomes[i].Id" />
+                    <input name="Categories[@i].Name" formaction="?handler=AddCategoryName" value="@incomes[i].Name" placeholder="Income category Name" />
                     <button type="submit" formaction="?handler=RemoveCategory">Remove Category</button>
                 </form>
                 <ul id="income-items-@i">
