@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+
 namespace ThePersonalBudgetApp;
 
 public class Program
@@ -21,6 +24,40 @@ public class Program
         //    // Remove these in production:
         //    .EnableSensitiveDataLogging()
         //    .EnableDetailedErrors());
+
+        // Use this when trying DI again!
+        //builder.Services.AddDbContextFactory<BudgetDbContext>(options =>
+        //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+        //{
+        //    sqlOptions.CommandTimeout(60);
+        //}));
+
+        /*Usage:
+            private IDbContextFactory<BudgetDbContext> _dbContextFactory <--------------- Normal DI
+            ctor(IDbContextFactory<MyDbContext> dbContextFactory)
+            {
+                _dbContextFactory = dbContextFactory;
+            }
+    
+            public async Task<Budget> FetchBudgetAsync(Guid budgetId)
+            {
+                Budget? fetchedBudget = null;
+                using (var context = _dbContextFactory.CreateDbContext()) <------------- using with Factory DI
+                {
+                    fetchedBudget = await context.Budgets!
+                        .Include(b => b.Categories!)
+                            .ThenInclude(c => c.Items)
+                        .FirstOrDefaultAsync(b => b.Id == budgetId);
+
+                    if (fetchedBudget == null)
+                    {
+                        throw new KeyNotFoundException($"Budget with ID {budgetId} not found.");
+                    }
+                }
+
+                return fetchedBudget;
+            }
+         */
 
 
         builder.Services.AddDistributedMemoryCache();
