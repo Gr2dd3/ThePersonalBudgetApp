@@ -26,17 +26,33 @@
         {
             <div>
                 <form method="post">
-                    <input type="hidden" name="categoryName" value="@incomes[i].Name" />
-                    <input type="hidden" name="categoryId" value="@incomes[i].Id" />
-                    <input name="Categories[@i].Name" formaction="?handler=AddCategoryName" value="@incomes[i].Name" placeholder="Income category Name" />
-                    <button type="submit" formaction="?handler=RemoveCategory">Remove Category</button>
+                    <input class="auto-save-input"
+                           name="@incomes[i].Name"
+                           value="@incomes[i].Name"
+                           data-category-id="@incomes[i].Id"
+                           placeholder="Income category Name" />
+                           <input type="hidden" name="categoryId" value="@incomes[i].Id" />
+                    <button type="submit"
+                            formaction="?handler=RemoveCategory">
+                        Remove Category
+                    </button>
                 </form>
                 <ul id="income-items-@i">
-                    @for (int j = 0; j < incomes[i].Items.Count; j++)
+                    @for (int j = 0; j < incomes[i].Items!.Count; j++)
                     {
                         <li>
-                            <input name="Categories[@i].Items[@j].Name" value="@incomes[i].Items[j].Name" placeholder="Item Name" />
-                            <input name="Categories[@i].Items[@j].Amount" value="@incomes[i].Items[j].Amount" placeholder="Amount" />
+                            <input class="auto-save-input"
+                                   name="@incomes[i].Items[j].Name"
+                                   value="@incomes[i].Items[j].Name"
+                                   data-category-id="@incomes[i].Id"
+                                   data-item-id="@incomes[i].Items[j].Id"
+                                   placeholder="Income item Name" />
+                            <input class="auto-save-input"
+                                   name="@incomes[i].Items[j].Amount"
+                                   value="@incomes[i].Items[j].Amount"
+                                   data-category-id="@incomes[i].Id"
+                                   data-item-id="@incomes[i].Items[j].Id"
+                                   placeholder="Amount" />
                             <form method="post">
                                 <input type="hidden" name="handler" value="RemoveItem" />
                                 <input type="hidden" name="categoryType" value="income" />
@@ -66,7 +82,12 @@
         {
             <div>
                 <form method="post">
-                    <input name="Categories[@i].Name" value="@expenses[i].Name" placeholder="Expense category Name" />
+                    <input 
+                        class="auto-save-input"
+                        name="@expenses[i].Name" 
+                        value="@expenses[i].Name" 
+                        data-category-id="@expenses[i].Id"
+                        placeholder="Expense category Name" />
                     <input type="hidden" name="categoryId" value="@expenses[i].Id" />
                     <button type="submit" formaction="?handler=RemoveCategory">Remove Category</button>
                 </form>
@@ -74,8 +95,18 @@
                     @for (int j = 0; j < expenses[i].Items.Count; j++)
                     {
                         <li>
-                            <input name="Categories[@i].Items[@j].Name" value="@expenses[i].Items[j].Name" placeholder="Item Name" />
-                            <input name="Categories[@i].Items[@j].Amount" value="@expenses[i].Items[j].Amount" placeholder="Amount" />
+                            <input class="auto-save-input"
+                                   name="@expenses[i].Items[j].Name"
+                                   value="@expenses[i].Items[j].Name"
+                                   data-category-id="@expenses[i].Id"
+                                   data-item-id="@expenses[i].Items[j].Id"
+                                   placeholder="Income item Name" />
+                            <input class="auto-save-input"
+                                   name="@expenses[i].Items[j].Amount"
+                                   value="@expenses[i].Items[j].Amount"
+                                   data-category-id="@expenses[i].Id"
+                                   data-item-id="@expenses[i].Items[j].Id"
+                                   placeholder="Amount" />
                             <form method="post">
                                 <input type="hidden" name="handler" value="RemoveItem" />
                                 <input type="hidden" name="isIncome" value="@false" />

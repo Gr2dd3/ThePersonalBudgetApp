@@ -5,10 +5,6 @@ public class CreateBudgetModel : PageModel
     [BindProperty]
     public Budget CreatedBudget { get; set; }
 
-    // TODO: Include Incomes and Expenses list to pageview 
-    public List<Category> Incomes { get; set; } = new List<Category>();
-    public List<Category> Expenses { get; set; } = new List<Category>();
-
     private IBudgetManager _iBudgetManager;
     private IHttpContextAccessor _httpContextAccessor;
     private string _sessionKey = "CreatedBudgetId";
@@ -24,11 +20,6 @@ public class CreateBudgetModel : PageModel
         if (budgetId != Guid.Empty)
         {
             CreatedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
-            if (CreatedBudget != null)
-            {
-                Incomes = CreatedBudget.Categories!.Where(c => c.IsIncome).ToList();
-                Expenses = CreatedBudget.Categories!.Where(c => !c.IsIncome).ToList();
-            }
         }
         else
         {
@@ -43,6 +34,46 @@ public class CreateBudgetModel : PageModel
             await OnPostSaveBudgetAsync(CreatedBudget.Id);
         }
     }
+
+    public async Task<IActionResult> OnPostSaveFieldAsync([FromBody] FieldUpdateModel model)
+    {
+        if (model == null || string.IsNullOrEmpty(model.FieldName))
+        {
+            return BadRequest("Invalid data.");
+        }
+
+        var category = CreatedBudget.Categories!.FirstOrDefault(c => c.Id == model.CategoryId);
+        if (category == null)
+        {
+            return NotFound("Category not found.");
+        }
+
+        if (model.ItemId != null)
+        {
+            var item = category.Items!.FirstOrDefault(i => i.Id == model.ItemId);
+            if (item == null)
+            {
+                return NotFound("Item not found.");
+            }
+
+            if (model.FieldName == "Amount")
+            {
+                item.Amount = float.TryParse(model.Value, out var parsedAmount) ? parsedAmount : 0;
+            }
+            else if (model.FieldName == "Name")
+            {
+                item.Name = model.Value;
+            }
+        }
+        else if (model.FieldName == "Name")
+        {
+            category.Name = model.Value;
+        }
+        CreatedBudget.Id = GetId();
+        await _iBudgetManager.SaveBudgetAsync(CreatedBudget);
+        return new JsonResult(new { success = true });
+    }
+
 
     public async Task<IActionResult> OnPostSaveBudgetAsync(Guid? budgetId = null)
     {

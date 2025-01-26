@@ -1,4 +1,56 @@
-﻿//function addCategory(type) {
+﻿function debounce(func, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+async function saveFieldData(input) {
+    const value = input.value;
+    const categoryId = input.dataset.categoryId;
+    const itemId = input.dataset.itemId;
+    const fieldName = input.name;
+
+    try {
+        const response = await fetch('/YourPageName?handler=SaveField', {
+            method: 'POST',
+            headers
+                : {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                categoryId: categoryId,
+                itemId: itemId,
+                fieldName: fieldName,
+                value: value,
+            }),
+        });
+
+        if (!response.ok) {
+            console.error('Failed to save data:', await response.text());
+        } else {
+            console.log('Field data saved successfully!');
+        }
+    } catch (error) {
+        console.error('Error saving data:', error);
+    }
+}
+
+// Koppla inputfält till debounce-funktionen
+document.querySelectorAll('.auto-save-input').forEach(input => {
+    input.addEventListener('input', debounce(function () {
+        saveFieldData(this);
+    }, 500)); // Vänta 500ms innan sparning
+});
+
+
+
+
+
+
+
+//function addCategory(type) {
 //    const container = document.querySelector(type === 'income' ? '#incomes-container' : '#expenses-container');
 //    const index = container.children.length;
 
