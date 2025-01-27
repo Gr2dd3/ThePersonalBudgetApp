@@ -24,3 +24,19 @@ body {
 main {
     margin-bottom: 40px;
 }
+
+.loading-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: yellow;
+    border-radius: 50%;
+}
+
+.success-indicator {
+    background-color: green;
+}
+
+.error-indicator {
+    background-color: red;
+}

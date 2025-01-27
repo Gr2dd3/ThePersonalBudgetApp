@@ -7,43 +7,43 @@
 }
 
 async function saveFieldData(input) {
-    const value = input.value;
-    const categoryId = input.dataset.categoryId;
-    const itemId = input.dataset.itemId;
-    const fieldName = input.name;
-    const timestamp = Date.now();
+    const loader = document.createElement('span');
+    loader.className = 'loading-indicator';
+    input.parentElement.appendChild(loader);
 
     try {
         const response = await fetch('/YourPageName?handler=SaveField', {
             method: 'POST',
-            headers
-                : {
+            headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                categoryId: categoryId,
-                itemId: itemId,
-                fieldName: fieldName,
-                value: value,
-                timestamp: timestamp
+                categoryId: input.dataset.categoryId,
+                itemId: input.dataset.itemId,
+                fieldName: input.name,
+                value: input.value,
             }),
         });
 
-        if (!response.ok) {
-            console.error('Failed to save data:', await response.text());
+        if (response.ok) {
+            loader.className = 'success-indicator';
         } else {
-            console.log('Field data saved successfully!');
+            loader.className = 'error-indicator';
         }
     } catch (error) {
-        console.error('Error saving data:', error);
+        loader.className = 'error-indicator';
+        console.error(error);
+    } finally {
+        setTimeout(() => loader.remove(), 2000);
     }
 }
+
 
 // Koppla inputfält till debounce-funktionen
 document.querySelectorAll('.auto-save-input[data-page="create-budget"]').forEach(input => {
     input.addEventListener('input', debounce(function () {
         saveFieldData(this);
-    }, 500)); // Vänta 500ms innan sparning
+    }, 500));
 });
 
 
