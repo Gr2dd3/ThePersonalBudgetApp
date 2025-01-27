@@ -38,7 +38,7 @@ async function saveFieldData(input) {
 }
 
 // Koppla inputfält till debounce-funktionen
-document.querySelectorAll('.auto-save-input').forEach(input => {
+document.querySelectorAll('.auto-save-input[data-page="create-budget"]').forEach(input => {
     input.addEventListener('input', debounce(function () {
         saveFieldData(this);
     }, 500)); // Vänta 500ms innan sparning

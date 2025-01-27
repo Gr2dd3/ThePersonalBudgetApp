@@ -3,7 +3,7 @@ using ThePersonalBudgetApp.DAL.Models;
 
 namespace ThePersonalBudgetApp.Pages;
 
-public class WorkOnBudgetModel : PageModel
+public class WorkOnBudgetModel : PageModel, IBudgetHandler
 {
     private IBudgetManager _iBudgetManager;
     private IHttpContextAccessor _httpContextAccessor;
@@ -18,7 +18,7 @@ public class WorkOnBudgetModel : PageModel
     public List<Budget>? Budgets { get; set; }
 
     [BindProperty]
-    public Budget? SelectedBudget { get; set; }
+    public Budget? CurrentBudget { get; set; }
 
     public async Task OnGetAsync()
     {
@@ -30,11 +30,11 @@ public class WorkOnBudgetModel : PageModel
         if (Request.Form["action"] == "back")
         {
             IsWorkingOnBudget = false;
-            SelectedBudget = null;
+            CurrentBudget = null;
         }
         else if (Guid.TryParse(Request.Form[_sessionKey], out Guid budgetId))
         {
-            SelectedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
+            CurrentBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
             SetId(budgetId);
             IsWorkingOnBudget = true;
         }
@@ -52,16 +52,16 @@ public class WorkOnBudgetModel : PageModel
             return Page();
         }
 
-        if (SelectedBudget is not null)
+        if (CurrentBudget is not null)
         {
             if (budgetId == null)
                 budgetId = GetId();
 
             Guid confirmedId = (Guid)budgetId;
-            SelectedBudget.Id = budgetId == Guid.Empty ? Guid.NewGuid() : confirmedId;
+            CurrentBudget.Id = budgetId == Guid.Empty ? Guid.NewGuid() : confirmedId;
 
 
-            await _iBudgetManager.SaveBudgetAsync(SelectedBudget);
+            await _iBudgetManager.SaveBudgetAsync(CurrentBudget);
         }
 
         return RedirectToPage();
@@ -75,12 +75,12 @@ public class WorkOnBudgetModel : PageModel
 
     public async Task<IActionResult> OnPostAddCategoryAsync(string categoryType)
     {
-        if (SelectedBudget == null)
+        if (CurrentBudget == null)
         {
             return Page();
         }
 
-        SelectedBudget.Categories!.Add(new Category
+        CurrentBudget.Categories!.Add(new Category
         {
             Id = Guid.NewGuid(),
             Name = "New Category",
@@ -92,25 +92,33 @@ public class WorkOnBudgetModel : PageModel
         return RedirectToPage();
     }
 
+    public async Task<IActionResult> OnPostAddCategoryNameAsync(Guid categoryId, string categoryName)
+    {
+        throw new NotImplementedException();
+    }
+    public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId, string? categoryName = null)
+    {
+        throw new NotImplementedException();
+    }
 
     public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId)
     {
-        if (SelectedBudget == null)
+        if (CurrentBudget == null)
         {
             return Page();
         }
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId, item: null);
-        SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget);
+        CurrentBudget = _iBudgetManager.ReloadBudget(CurrentBudget);
         IsWorkingOnBudget = true;
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostAddItem(Guid? categoryId)
+    public async Task<IActionResult> OnPostAddItem(Guid categoryId)
     {
         if (categoryId != null)
         {
-            var category = SelectedBudget!.Categories!
+            var category = CurrentBudget!.Categories!
                 .FirstOrDefault(c => c.Id == categoryId);
             if (category != null)
                 category.Items!.Add(new Item { Name = "New Item", Amount = 0 });
@@ -121,22 +129,27 @@ public class WorkOnBudgetModel : PageModel
 
     public async Task<IActionResult> OnPostRemoveItemAsync(Guid categoryId, int itemIndex)
     {
-        if (SelectedBudget == null)
+        if (CurrentBudget == null)
         {
             return Page();
         }
 
-        var removeItem = SelectedBudget?.Categories!
-            .FirstOrDefault(x => x.Id == categoryId)?
+        var removeFromCategory = CurrentBudget?.Categories!
+            .FirstOrDefault(x => x.Id == categoryId);
+        var removeItem = removeFromCategory?
             .Items![itemIndex];
 
         if (removeItem is null)
         {
             return Page();
         }
+        if (itemIndex < 0 || itemIndex >= removeFromCategory?.Items!.Count)
+        {
+            return BadRequest("Invalid item index.");
+        }
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId: null, removeItem);
-        SelectedBudget = _iBudgetManager.ReloadBudget(SelectedBudget!);
+        CurrentBudget = _iBudgetManager.ReloadBudget(CurrentBudget!);
         IsWorkingOnBudget = true;
         return RedirectToPage();
     }
@@ -145,11 +158,19 @@ public class WorkOnBudgetModel : PageModel
 
     private async Task Save()
     {
-        SelectedBudget.Id = GetId();
-        await OnPostSaveBudgetAsync(SelectedBudget.Id);
+        CurrentBudget.Id = GetId();
+        await OnPostSaveBudgetAsync(CurrentBudget.Id);
     }
     private void SetId(Guid id) => _httpContextAccessor?.HttpContext?.Session.Set(_sessionKey, id.ToByteArray());
-    private Guid GetId() => GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
+    private Guid GetId()
+    {
+        var id = GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
+        if (id == Guid.Empty)
+        {
+            throw new InvalidOperationException("Session ID is missing or invalid.");
+        }
+        return id;
+    }
 
     #endregion
 

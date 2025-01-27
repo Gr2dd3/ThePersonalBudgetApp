@@ -1,3 +1,5 @@
+using ThePersonalBudgetApp.DAL.Models;
+
 namespace ThePersonalBudgetApp.Pages;
 
 public class CreateBudgetModel : PageModel, IBudgetHandler
@@ -40,6 +42,11 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         if (model == null || string.IsNullOrEmpty(model.FieldName))
         {
             return BadRequest("Invalid data.");
+        }
+
+        if (CurrentBudget == null || CurrentBudget.Categories == null)
+        {
+            return BadRequest("Budget or categories not loaded properly.");
         }
 
         var category = CurrentBudget.Categories!.FirstOrDefault(c => c.Id == model.CategoryId);
@@ -167,14 +174,18 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         {
             return Page();
         }
-
-        var removeItem = CurrentBudget?.Categories!
-            .FirstOrDefault(x => x.Id == categoryId)?
+        var removeFromCategory = CurrentBudget?.Categories!
+            .FirstOrDefault(x => x.Id == categoryId);
+        var removeItem = removeFromCategory?
             .Items![itemIndex];
 
         if (removeItem is null)
         {
             return Page();
+        }
+        if (itemIndex < 0 || itemIndex >= removeFromCategory?.Items!.Count)
+        {
+            return BadRequest("Invalid item index.");
         }
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId: null, removeItem);
@@ -192,7 +203,15 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
     }
 
     private void SetId(Guid id) => _httpContextAccessor?.HttpContext?.Session.Set(_sessionKey, id.ToByteArray());
-    private Guid GetId() => GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
+    private Guid GetId()
+    {
+        var id = GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
+        if (id == Guid.Empty)
+        {
+            throw new InvalidOperationException("Session ID is missing or invalid.");
+        }
+        return id;
+    }
 
     #endregion
 }

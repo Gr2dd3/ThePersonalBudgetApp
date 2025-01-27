@@ -27,11 +27,12 @@
             <div>
                 <form method="post">
                     <input class="auto-save-input"
+                           data-page="create-budget"
                            name="@incomes[i].Name"
                            value="@incomes[i].Name"
                            data-category-id="@incomes[i].Id"
                            placeholder="Income category Name" />
-                           <input type="hidden" name="categoryId" value="@incomes[i].Id" />
+                    <input type="hidden" name="categoryId" value="@incomes[i].Id" />
                     <button type="submit"
                             formaction="?handler=RemoveCategory">
                         Remove Category
@@ -42,6 +43,7 @@
                     {
                         <li>
                             <input class="auto-save-input"
+                                   data-page="create-budget"
                                    name="@incomes[i].Items[j].Name"
                                    value="@incomes[i].Items[j].Name"
                                    data-category-id="@incomes[i].Id"
@@ -82,12 +84,12 @@
         {
             <div>
                 <form method="post">
-                    <input 
-                        class="auto-save-input"
-                        name="@expenses[i].Name" 
-                        value="@expenses[i].Name" 
-                        data-category-id="@expenses[i].Id"
-                        placeholder="Expense category Name" />
+                    <input class="auto-save-input"
+                           data-page="create-budget"
+                           name="@expenses[i].Name"
+                           value="@expenses[i].Name"
+                           data-category-id="@expenses[i].Id"
+                           placeholder="Expense category Name" />
                     <input type="hidden" name="categoryId" value="@expenses[i].Id" />
                     <button type="submit" formaction="?handler=RemoveCategory">Remove Category</button>
                 </form>
@@ -96,6 +98,7 @@
                     {
                         <li>
                             <input class="auto-save-input"
+                                   data-page="create-budget"
                                    name="@expenses[i].Items[j].Name"
                                    value="@expenses[i].Items[j].Name"
                                    data-category-id="@expenses[i].Id"
