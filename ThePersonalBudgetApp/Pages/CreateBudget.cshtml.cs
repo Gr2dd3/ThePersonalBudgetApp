@@ -1,9 +1,9 @@
 namespace ThePersonalBudgetApp.Pages;
 
-public class CreateBudgetModel : PageModel
+public class CreateBudgetModel : PageModel, IBudgetHandler
 {
     [BindProperty]
-    public Budget CreatedBudget { get; set; }
+    public Budget CurrentBudget { get; set; }
 
     private IBudgetManager _iBudgetManager;
     private IHttpContextAccessor _httpContextAccessor;
@@ -19,11 +19,11 @@ public class CreateBudgetModel : PageModel
         var budgetId = GetId();
         if (budgetId != Guid.Empty)
         {
-            CreatedBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
+            CurrentBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
         }
         else
         {
-            CreatedBudget = new Budget()
+            CurrentBudget = new Budget()
             {
                 Id = Guid.NewGuid(),
                 Title = "Min Budget",
@@ -31,7 +31,7 @@ public class CreateBudgetModel : PageModel
                 Categories = new List<Category>(),
 
             };
-            await OnPostSaveBudgetAsync(CreatedBudget.Id);
+            await OnPostSaveBudgetAsync(CurrentBudget.Id);
         }
     }
 
@@ -42,7 +42,7 @@ public class CreateBudgetModel : PageModel
             return BadRequest("Invalid data.");
         }
 
-        var category = CreatedBudget.Categories!.FirstOrDefault(c => c.Id == model.CategoryId);
+        var category = CurrentBudget.Categories!.FirstOrDefault(c => c.Id == model.CategoryId);
         if (category == null)
         {
             return NotFound("Category not found.");
@@ -69,8 +69,8 @@ public class CreateBudgetModel : PageModel
         {
             category.Name = model.Value;
         }
-        CreatedBudget.Id = GetId();
-        await _iBudgetManager.SaveBudgetAsync(CreatedBudget);
+        CurrentBudget.Id = GetId();
+        await _iBudgetManager.SaveBudgetAsync(CurrentBudget);
         return new JsonResult(new { success = true });
     }
 
@@ -81,13 +81,13 @@ public class CreateBudgetModel : PageModel
         {
             return Page();
         }
-        if (CreatedBudget is not null)
+        if (CurrentBudget is not null)
         {
-            CreatedBudget.Id = GetId();
-            if (CreatedBudget.Id == Guid.Empty)
+            CurrentBudget.Id = GetId();
+            if (CurrentBudget.Id == Guid.Empty)
             {
-                CreatedBudget.Id = Guid.NewGuid();
-                SetId(CreatedBudget.Id);
+                CurrentBudget.Id = Guid.NewGuid();
+                SetId(CurrentBudget.Id);
             }
             else if (budgetId is not null)
             {
@@ -96,10 +96,10 @@ public class CreateBudgetModel : PageModel
             }
             else
             {
-                throw new Exception($"Unable to save budget with {CreatedBudget.Id}");
+                throw new Exception($"Unable to save budget with {CurrentBudget.Id}");
 
             }
-            await _iBudgetManager.SaveBudgetAsync(CreatedBudget);
+            await _iBudgetManager.SaveBudgetAsync(CurrentBudget);
         }
 
         return RedirectToPage();
@@ -111,19 +111,19 @@ public class CreateBudgetModel : PageModel
             return Page();
 
         await _iBudgetManager.SaveCategoryAsync(categoryId, categoryName);
-        CreatedBudget = _iBudgetManager.ReloadBudget(CreatedBudget);
+        CurrentBudget = _iBudgetManager.ReloadBudget(CurrentBudget);
 
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostAddCategoryAsync(string categoryType)
     {
-        if (CreatedBudget == null)
+        if (CurrentBudget == null)
         {
             return Page();
         }
 
-        CreatedBudget.Categories!.Add(new Category()
+        CurrentBudget.Categories!.Add(new Category()
         {
             Id = Guid.NewGuid(),
             Name = "New Category",
@@ -137,19 +137,19 @@ public class CreateBudgetModel : PageModel
 
     public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId, string? categoryName = null)
     {
-        if (CreatedBudget == null)
+        if (CurrentBudget == null)
         {
             return Page();
         }
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId, item: null);
-        CreatedBudget = _iBudgetManager.ReloadBudget(CreatedBudget);
+        CurrentBudget = _iBudgetManager.ReloadBudget(CurrentBudget);
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostAddItem(Guid categoryId)
     {
-        var category = CreatedBudget.Categories!
+        var category = CurrentBudget.Categories!
             .FirstOrDefault(c => c.Id == categoryId);
         if (category != null)
         {
@@ -163,12 +163,12 @@ public class CreateBudgetModel : PageModel
 
     public async Task<IActionResult> OnPostRemoveItemAsync(Guid categoryId, int itemIndex)
     {
-        if (CreatedBudget == null)
+        if (CurrentBudget == null)
         {
             return Page();
         }
 
-        var removeItem = CreatedBudget?.Categories!
+        var removeItem = CurrentBudget?.Categories!
             .FirstOrDefault(x => x.Id == categoryId)?
             .Items![itemIndex];
 
@@ -178,8 +178,8 @@ public class CreateBudgetModel : PageModel
         }
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId: null, removeItem);
-        CreatedBudget!.Id = GetId();
-        CreatedBudget = _iBudgetManager.ReloadBudget(CreatedBudget!);
+        CurrentBudget!.Id = GetId();
+        CurrentBudget = _iBudgetManager.ReloadBudget(CurrentBudget!);
         return RedirectToPage();
     }
 
@@ -187,8 +187,8 @@ public class CreateBudgetModel : PageModel
 
     private async Task Save()
     {
-        CreatedBudget.Id = GetId();
-        await OnPostSaveBudgetAsync(CreatedBudget.Id);
+        CurrentBudget.Id = GetId();
+        await OnPostSaveBudgetAsync(CurrentBudget.Id);
     }
 
     private void SetId(Guid id) => _httpContextAccessor?.HttpContext?.Session.Set(_sessionKey, id.ToByteArray());

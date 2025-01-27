@@ -6,9 +6,9 @@
 
 <h1>Budget Manager</h1>
 
-@if (Model.CreatedBudget != null)
+@if (Model.CurrentBudget != null)
 {
-    <partial name="Shared/BudgetFormPartial" model="Model.CreatedBudget" />
+    <partial name="Shared/BudgetFormPartial" model="Model.CurrentBudget" />
 }
 else
 {
