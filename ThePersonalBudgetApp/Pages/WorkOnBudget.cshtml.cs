@@ -155,6 +155,10 @@ public class WorkOnBudgetModel : PageModel, IBudgetHandler
     }
 
     #region Private Methods
+    private bool IsBudgetValid()
+    {
+        return CurrentBudget != null && CurrentBudget.Categories != null;
+    }
 
     private async Task Save()
     {
@@ -167,7 +171,8 @@ public class WorkOnBudgetModel : PageModel, IBudgetHandler
         var id = GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
         if (id == Guid.Empty)
         {
-            throw new InvalidOperationException("Session ID is missing or invalid.");
+            id = Guid.NewGuid();
+            SetId(id);
         }
         return id;
     }

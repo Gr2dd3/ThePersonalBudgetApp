@@ -11,6 +11,7 @@ async function saveFieldData(input) {
     const categoryId = input.dataset.categoryId;
     const itemId = input.dataset.itemId;
     const fieldName = input.name;
+    const timestamp = Date.now();
 
     try {
         const response = await fetch('/YourPageName?handler=SaveField', {
@@ -24,6 +25,7 @@ async function saveFieldData(input) {
                 itemId: itemId,
                 fieldName: fieldName,
                 value: value,
+                timestamp: timestamp
             }),
         });
 

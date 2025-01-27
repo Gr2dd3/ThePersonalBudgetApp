@@ -44,7 +44,7 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
             return BadRequest("Invalid data.");
         }
 
-        if (CurrentBudget == null || CurrentBudget.Categories == null)
+        if (!IsBudgetValid())
         {
             return BadRequest("Budget or categories not loaded properly.");
         }
@@ -80,7 +80,6 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         await _iBudgetManager.SaveBudgetAsync(CurrentBudget);
         return new JsonResult(new { success = true });
     }
-
 
     public async Task<IActionResult> OnPostSaveBudgetAsync(Guid? budgetId = null)
     {
@@ -195,7 +194,10 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
     }
 
     #region Private Methods
-
+    private bool IsBudgetValid()
+    {
+        return CurrentBudget != null && CurrentBudget.Categories != null;
+    }
     private async Task Save()
     {
         CurrentBudget.Id = GetId();
@@ -208,7 +210,8 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         var id = GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
         if (id == Guid.Empty)
         {
-            throw new InvalidOperationException("Session ID is missing or invalid.");
+            id = Guid.NewGuid();
+            SetId(id);
         }
         return id;
     }

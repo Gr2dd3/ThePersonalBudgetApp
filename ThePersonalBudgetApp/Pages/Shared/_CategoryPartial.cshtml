@@ -1,0 +1,30 @@
+﻿@model Category
+
+<div>
+    <input class="auto-save-input"
+           data-page="create-budget"
+           name="@Model.Name"
+           value="@Model.Name"
+           data-category-id="@Model.Id"
+           placeholder="Category Name" />
+    <ul>
+        @foreach (var item in Model.Items!)
+        {
+            <li>
+                <input class="auto-save-input"
+                       data-page="create-budget"
+                       name="@item.Name"
+                       value="@item.Name"
+                       data-category-id="@Model.Id"
+                       data-item-id="@item.Id"
+                       placeholder="Item Name" />
+                <input class="auto-save-input"
+                       name="@item.Amount"
+                       value="@item.Amount"
+                       data-category-id="@Model.Id"
+                       data-item-id="@item.Id"
+                       placeholder="Amount" />
+            </li>
+        }
+    </ul>
+</div>
