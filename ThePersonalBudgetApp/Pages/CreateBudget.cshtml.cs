@@ -37,7 +37,7 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         }
     }
 
-    public async Task<IActionResult> OnPostSaveFieldAsync([FromBody] FieldUpdateModel model)
+    public async Task<IActionResult> SaveFieldAsync([FromBody] FieldUpdateModel model)
     {
         if (model == null || string.IsNullOrEmpty(model.FieldName))
         {
@@ -205,16 +205,8 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
     }
 
     private void SetId(Guid id) => _httpContextAccessor?.HttpContext?.Session.Set(_sessionKey, id.ToByteArray());
-    private Guid GetId()
-    {
-        var id = GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
-        if (id == Guid.Empty)
-        {
-            id = Guid.NewGuid();
-            SetId(id);
-        }
-        return id;
-    }
+    private Guid GetId() => GlobalMethods.GetBudgetIdFromSessionAsync(_httpContextAccessor.HttpContext, _sessionKey);
+
 
     #endregion
 }

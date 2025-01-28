@@ -12,7 +12,7 @@ async function saveFieldData(input) {
     input.parentElement.appendChild(loader);
 
     try {
-        const response = await fetch('/YourPageName?handler=SaveField', {
+        const response = await fetch('/CreateBudget?handler=SaveFieldAsync', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -20,8 +20,9 @@ async function saveFieldData(input) {
             body: JSON.stringify({
                 categoryId: input.dataset.categoryId,
                 itemId: input.dataset.itemId,
-                fieldName: input.name,
-                value: input.value,
+                fieldName: input.dataset.name,
+                value: input.dataset.value,
+                timestamp: new Date().toISOString()
             }),
         });
 
