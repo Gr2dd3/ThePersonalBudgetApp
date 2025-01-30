@@ -3,10 +3,10 @@
 
 public class FieldUpdateModel
 {
-    public Guid CategoryId { get; set; }
-    public Guid? ItemId { get; set; }
-    public string FieldName { get; set; }
-    public string Value { get; set; }
+    public string? CategoryId { get; set; }
+    public string? ItemId { get; set; }
+    public string? FieldName { get; set; }
+    public string? Value { get; set; }
 
-    public DateTime Timestamp { get; set; }
+    public DateTime? Timestamp { get; set; }
 }

@@ -1,3 +1,4 @@
+using System;
 using ThePersonalBudgetApp.DAL.Models;
 
 namespace ThePersonalBudgetApp.Pages;
@@ -37,10 +38,13 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         }
     }
 
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> SaveFieldAsync([FromBody] FieldUpdateModel model)
     {
         #region SafetyChecks
 
+        var iId = Guid.TryParse(model.ItemId, out var itemId);
+        var cId = Guid.TryParse(model.CategoryId, out var categoryId);
         var options = new JsonSerializerOptions { WriteIndented = true };
         var requestBody = System.Text.Json.JsonSerializer.Serialize(model, options);
         Console.WriteLine($"Received request: {requestBody}");
@@ -53,18 +57,18 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         {
             return BadRequest("Budget or categories not loaded properly.");
         }
-        if (!Guid.TryParse(model.CategoryId.ToString(), out _))
+        if (!Guid.TryParse(categoryId.ToString(), out _))
         {
             return BadRequest("Invalid CategoryId GUID.");
         }
 
-        if (model.ItemId.HasValue && !Guid.TryParse(model.ItemId.ToString(), out _))
+        if (itemId != Guid.Empty && !Guid.TryParse(itemId.ToString(), out _))
         {
             return BadRequest("Invalid ItemId GUID.");
         }
         #endregion
 
-        var category = CurrentBudget.Categories!.FirstOrDefault(c => c.Id == model.CategoryId);
+        var category = CurrentBudget.Categories!.FirstOrDefault(c => c.Id == categoryId);
         if (category == null)
         {
             return NotFound("Category not found.");
@@ -72,7 +76,7 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
 
         if (model.ItemId != null)
         {
-            var item = category.Items!.FirstOrDefault(i => i.Id == model.ItemId);
+            var item = category.Items!.FirstOrDefault(i => i.Id == itemId);
             if (item == null)
             {
                 return NotFound("Item not found.");

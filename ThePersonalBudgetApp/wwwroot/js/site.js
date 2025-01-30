@@ -11,10 +11,20 @@ async function saveFieldData(input) {
     loader.className = 'loading-indicator';
     input.parentElement.appendChild(loader);
     try {
+        console.log("Sending request data:", JSON.stringify({
+            categoryId: input.dataset.categoryId,
+            itemId: input.dataset.itemId,
+            fieldName: input.name,
+            value: input.value,
+            timestamp: new Date().toISOString()
+        }));
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
         const response = await fetch('/CreateBudget?handler=SaveField', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'RequestVerificationToken': token
             },
             body: JSON.stringify({
                 categoryId: input.dataset.categoryId ? input.dataset.categoryId.toString() : null,
