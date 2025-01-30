@@ -13,4 +13,5 @@ global using QuestPDF.Helpers;
 global using System.Reflection.Metadata;
 global using Newtonsoft.Json;
 global using Microsoft.Extensions.Options;
+global using System.Text.Json;
 

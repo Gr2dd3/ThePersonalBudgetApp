@@ -39,15 +39,30 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
 
     public async Task<IActionResult> SaveFieldAsync([FromBody] FieldUpdateModel model)
     {
+        #region SafetyChecks
+
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var requestBody = System.Text.Json.JsonSerializer.Serialize(model, options);
+        Console.WriteLine($"Received request: {requestBody}");
+
         if (model == null || string.IsNullOrEmpty(model.FieldName))
         {
             return BadRequest("Invalid data.");
         }
-
         if (!IsBudgetValid())
         {
             return BadRequest("Budget or categories not loaded properly.");
         }
+        if (!Guid.TryParse(model.CategoryId.ToString(), out _))
+        {
+            return BadRequest("Invalid CategoryId GUID.");
+        }
+
+        if (model.ItemId.HasValue && !Guid.TryParse(model.ItemId.ToString(), out _))
+        {
+            return BadRequest("Invalid ItemId GUID.");
+        }
+        #endregion
 
         var category = CurrentBudget.Categories!.FirstOrDefault(c => c.Id == model.CategoryId);
         if (category == null)

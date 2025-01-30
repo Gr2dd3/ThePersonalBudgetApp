@@ -10,21 +10,22 @@ async function saveFieldData(input) {
     const loader = document.createElement('span');
     loader.className = 'loading-indicator';
     input.parentElement.appendChild(loader);
-
     try {
-        const response = await fetch('/CreateBudget?handler=SaveFieldAsync', {
+        const response = await fetch('/CreateBudget?handler=SaveField', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                categoryId: input.dataset.categoryId,
-                itemId: input.dataset.itemId,
-                fieldName: input.dataset.name,
-                value: input.dataset.value,
+                categoryId: input.dataset.categoryId ? input.dataset.categoryId.toString() : null,
+                itemId: input.dataset.itemId ? input.dataset.itemId.toString() : null,
+                fieldName: input.name,
+                value: input.value,
                 timestamp: new Date().toISOString()
             }),
         });
+
+        console.log(response);
 
         if (response.ok) {
             loader.className = 'success-indicator';

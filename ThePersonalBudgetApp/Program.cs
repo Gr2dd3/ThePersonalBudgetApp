@@ -15,6 +15,11 @@ public class Program
 
         builder.Services.AddRazorPages();
 
+        builder.Services.Configure<JsonOptions>(options =>
+        {
+            options.JsonSerializerOptions.PropertyNamingPolicy = null;
+        });
+
         ////Currently not using DI, to see whats wrong with db connection
         //builder.Services.AddDbContext<BudgetDbContext>(options =>
         //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
