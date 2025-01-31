@@ -1,5 +1,4 @@
 ﻿namespace ThePersonalBudgetApp.Interfaces;
-
 public interface IBudgetHandler
 {
     Budget CurrentBudget { get; set; }

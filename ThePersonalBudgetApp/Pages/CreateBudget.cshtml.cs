@@ -1,8 +1,6 @@
-using System;
-using ThePersonalBudgetApp.DAL.Models;
-
 namespace ThePersonalBudgetApp.Pages;
 
+[IgnoreAntiforgeryToken]
 public class CreateBudgetModel : PageModel, IBudgetHandler
 {
     [BindProperty]
@@ -38,13 +36,14 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         }
     }
 
-    [IgnoreAntiforgeryToken]
-    public async Task<IActionResult> SaveFieldAsync([FromBody] FieldUpdateModel model)
+    //TODO: Test to see if we can reach this method. site.js seems fine now. response = 200 OK
+    
+    public async Task<IActionResult> OnPostSaveFieldAsync([FromBody] FieldUpdateModel model)
     {
-        #region SafetyChecks
-
         var iId = Guid.TryParse(model.ItemId, out var itemId);
         var cId = Guid.TryParse(model.CategoryId, out var categoryId);
+        #region SafetyChecks
+
         var options = new JsonSerializerOptions { WriteIndented = true };
         var requestBody = System.Text.Json.JsonSerializer.Serialize(model, options);
         Console.WriteLine($"Received request: {requestBody}");
@@ -68,32 +67,29 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         }
         #endregion
 
-        var category = CurrentBudget.Categories!.FirstOrDefault(c => c.Id == categoryId);
-        if (category == null)
-        {
-            return NotFound("Category not found.");
-        }
+        
 
-        if (model.ItemId != null)
+        //New Item?
+        if (itemId != Guid.Empty)
         {
-            var item = category.Items!.FirstOrDefault(i => i.Id == itemId);
-            if (item == null)
-            {
-                return NotFound("Item not found.");
-            }
-
+            float itemAmount = 0;
+            var itemName = string.Empty;
             if (model.FieldName == "Amount")
             {
-                item.Amount = float.TryParse(model.Value, out var parsedAmount) ? parsedAmount : 0;
+                itemAmount = float.TryParse(model.Value, out var parsedAmount) ? parsedAmount : 0;
             }
             else if (model.FieldName == "Name")
             {
-                item.Name = model.Value;
+                itemName = model.Value;
             }
+            await _iBudgetManager.SaveItemAsync(categoryId, itemId, itemName, itemAmount);
         }
         else if (model.FieldName == "Name")
         {
-            category.Name = model.Value;
+            string categoryName = string.Empty;
+            if (model.Value is not null)
+                categoryName = model.Value;
+            await _iBudgetManager.SaveCategoryAsync(categoryId, categoryName);
         }
         CurrentBudget.Id = GetId();
         await _iBudgetManager.SaveBudgetAsync(CurrentBudget);

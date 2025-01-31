@@ -55,7 +55,7 @@ async function saveFieldData(input) {
 document.querySelectorAll('.auto-save-input[data-page="create-budget"]').forEach(input => {
     input.addEventListener('input', debounce(function () {
         saveFieldData(this);
-    }, 500));
+    }, 1000));
 });
 
 

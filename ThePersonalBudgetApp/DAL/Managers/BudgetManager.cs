@@ -18,9 +18,32 @@ public class BudgetManager : IBudgetManager
             await context.SaveChangesAsync();
         }
     }
-    public async Task SaveItemAsync(Guid categoryId, string? itemName = null, float? amount = 0)
+    public async Task SaveItemAsync(Guid categoryId, Guid? itemId, string? itemName = null, float amount = 0)
     {
-        new NotImplementedException();
+        if (categoryId == Guid.Empty)
+            return;
+
+        using (var context = new BudgetDbContext())
+        {
+            var categoryThatItemBelongsTo = context.Categories.Where(c => c.Id == categoryId).FirstOrDefault();
+            if (itemId == Guid.Empty)
+            {
+                var newItem = new Item()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = itemName != null ? itemName : "ItemName",
+                    Amount = amount != 0 ? amount : 0,
+                    CategoryId = categoryId,
+                    Category = categoryThatItemBelongsTo
+                };
+            }
+            //TODO
+            else
+            {
+                //Update existing item
+            }
+            //SaveChanges
+        }
     }
 
 
@@ -224,7 +247,7 @@ public class BudgetManager : IBudgetManager
     {
         try
         {
-            
+
             return await context.Budgets!
                 .FirstOrDefaultAsync(b => b.Id == budgetId);
         }
