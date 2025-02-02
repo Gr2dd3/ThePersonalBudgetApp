@@ -65,9 +65,7 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         }
         #endregion
 
-        
-
-        //New Item?
+        // TODO: Check item fieldName 'Amount' and 'New Item'?
         if (itemId != Guid.Empty)
         {
             float itemAmount = 0;
@@ -76,7 +74,7 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
             {
                 itemAmount = float.TryParse(model.Value, out var parsedAmount) ? parsedAmount : 0;
             }
-            else if (model.FieldName == "Name")
+            else if (model.FieldName == "New Item")
             {
                 itemName = model.Value;
             }
@@ -120,17 +118,6 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
             }
             await _iBudgetManager.SaveBudgetAsync(CurrentBudget);
         }
-
-        return RedirectToPage();
-    }
-
-    public async Task<IActionResult> OnPostAddCategoryNameAsync(Guid categoryId, string categoryName)
-    {
-        if (!ModelState.IsValid)
-            return Page();
-
-        await _iBudgetManager.SaveCategoryAsync(categoryId, categoryName);
-        CurrentBudget = _iBudgetManager.ReloadBudget(CurrentBudget);
 
         return RedirectToPage();
     }

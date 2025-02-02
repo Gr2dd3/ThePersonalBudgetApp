@@ -92,16 +92,7 @@ public class WorkOnBudgetModel : PageModel, IBudgetHandler
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostAddCategoryNameAsync(Guid categoryId, string categoryName)
-    {
-        throw new NotImplementedException();
-    }
     public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId, string? categoryName = null)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId)
     {
         if (CurrentBudget == null)
         {
@@ -110,7 +101,6 @@ public class WorkOnBudgetModel : PageModel, IBudgetHandler
 
         await _iBudgetManager.DeleteBudgetCategoryOrItemAsync(categoryId, item: null);
         CurrentBudget = _iBudgetManager.ReloadBudget(CurrentBudget);
-        IsWorkingOnBudget = true;
         return RedirectToPage();
     }
 
