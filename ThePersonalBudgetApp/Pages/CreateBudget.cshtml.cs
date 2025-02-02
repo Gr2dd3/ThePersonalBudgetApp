@@ -35,8 +35,6 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
             await OnPostSaveBudgetAsync(CurrentBudget.Id);
         }
     }
-
-    //TODO: Test to see if we can reach this method. site.js seems fine now. response = 200 OK
     
     public async Task<IActionResult> OnPostSaveFieldAsync([FromBody] FieldUpdateModel model)
     {
@@ -84,7 +82,7 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
             }
             await _iBudgetManager.SaveItemAsync(categoryId, itemId, itemName, itemAmount);
         }
-        else if (model.FieldName == "Name")
+        else if (model.FieldName == "New Category")
         {
             string categoryName = string.Empty;
             if (model.Value is not null)

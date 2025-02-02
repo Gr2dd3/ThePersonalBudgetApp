@@ -1,4 +1,11 @@
-﻿function debounce(func, delay) {
+﻿
+document.getElementById("preventEnterInput").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+    }
+});
+
+function debounce(func, delay) {
     let timer;
     return function (...args) {
         clearTimeout(timer);
