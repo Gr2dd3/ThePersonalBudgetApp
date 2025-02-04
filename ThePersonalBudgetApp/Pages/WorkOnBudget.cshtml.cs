@@ -104,7 +104,7 @@ public class WorkOnBudgetModel : PageModel, IBudgetHandler
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostAddItem(Guid categoryId)
+    public async Task<IActionResult> OnPostAddItemAsync(Guid categoryId)
     {
         if (categoryId != null)
         {

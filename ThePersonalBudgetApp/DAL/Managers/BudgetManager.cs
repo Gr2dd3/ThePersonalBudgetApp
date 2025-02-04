@@ -3,7 +3,7 @@
 public class BudgetManager : IBudgetManager
 {
 
-    public async Task SaveCategoryAsync(Guid? categoryId, string categoryName)
+    public async Task SaveCategoryNameAsync(Guid? categoryId, string categoryName)
     {
         using (var context = new BudgetDbContext())
         {
@@ -18,7 +18,7 @@ public class BudgetManager : IBudgetManager
             await context.SaveChangesAsync();
         }
     }
-    public async Task SaveItemAsync(Guid categoryId, Guid? itemId, string? itemName = null, float amount = 0)
+    public async Task SaveItemNameAsync(Guid categoryId, Guid? itemId, string? itemName = null, float amount = 0)
     {
         if (categoryId == Guid.Empty)
             return;
@@ -42,7 +42,8 @@ public class BudgetManager : IBudgetManager
             {
                 //Update existing item
             }
-            //SaveChanges
+
+            await context.SaveChangesAsync();
         }
     }
 

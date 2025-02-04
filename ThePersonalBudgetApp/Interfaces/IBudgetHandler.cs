@@ -5,6 +5,6 @@ public interface IBudgetHandler
     Task<IActionResult> OnPostSaveBudgetAsync(Guid? budgetId = null);
     Task<IActionResult> OnPostAddCategoryAsync(string categoryType);
     Task<IActionResult> OnPostRemoveCategoryAsync(Guid categoryId, string? categoryName = null);
-    Task<IActionResult> OnPostAddItem(Guid categoryId);
+    Task<IActionResult> OnPostAddItemAsync(Guid categoryId);
     Task<IActionResult> OnPostRemoveItemAsync(Guid categoryId, int itemIndex);
 }

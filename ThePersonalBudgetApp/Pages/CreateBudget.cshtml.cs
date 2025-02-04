@@ -78,14 +78,14 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
             {
                 itemName = model.Value;
             }
-            await _iBudgetManager.SaveItemAsync(categoryId, itemId, itemName, itemAmount);
+            await _iBudgetManager.SaveItemNameAsync(categoryId, itemId, itemName, itemAmount);
         }
         else if (model.FieldName == "New Category")
         {
             string categoryName = string.Empty;
             if (model.Value is not null)
                 categoryName = model.Value;
-            await _iBudgetManager.SaveCategoryAsync(categoryId, categoryName);
+            await _iBudgetManager.SaveCategoryNameAsync(categoryId, categoryName);
         }
         CurrentBudget.Id = GetId();
         await _iBudgetManager.SaveBudgetAsync(CurrentBudget);
@@ -153,13 +153,26 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostAddItem(Guid categoryId)
+    public async Task<IActionResult> OnPostAddItemAsync(Guid categoryId)
     {
-        var category = CurrentBudget.Categories!
-            .FirstOrDefault(c => c.Id == categoryId);
+        var budgetId = GetId();
+        CurrentBudget = await _iBudgetManager.FetchBudgetAsync(budgetId);
+
+        if (CurrentBudget == null)
+            return Page();
+
+        var category = CurrentBudget?.Categories!.Where(c => c.Id == categoryId).FirstOrDefault();
+
         if (category != null)
         {
-            category.Items!.Add(new Item { Name = "New Item", Amount = 0 });
+            category.Items!.Add(
+                new Item { 
+                    Id = Guid.NewGuid(), 
+                    Name = "New Item", 
+                    Amount = 0,
+                    CategoryId = categoryId,
+                    Category = category,
+                });
         }
 
         await Save();
