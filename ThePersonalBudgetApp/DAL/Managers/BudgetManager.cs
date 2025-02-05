@@ -26,6 +26,7 @@ public class BudgetManager : IBudgetManager
         using (var context = new BudgetDbContext())
         {
             var categoryThatItemBelongsTo = context.Categories.Where(c => c.Id == categoryId).FirstOrDefault();
+            Item? item = null;
             if (itemId == Guid.Empty)
             {
                 var newItem = new Item()
@@ -37,12 +38,15 @@ public class BudgetManager : IBudgetManager
                     Category = categoryThatItemBelongsTo
                 };
             }
-            //TODO
             else
             {
-                //Update existing item
-            }
+                item = categoryThatItemBelongsTo?.Items!.Where(i => i.Id == itemId).FirstOrDefault();
+                if (item == null)
+                    return;
 
+                item.Name = itemName;
+                item.Amount = amount;
+            }
             await context.SaveChangesAsync();
         }
     }
@@ -291,6 +295,7 @@ public class BudgetManager : IBudgetManager
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
+            //Error here. Why?
             catch
             {
                 await transaction.RollbackAsync();
