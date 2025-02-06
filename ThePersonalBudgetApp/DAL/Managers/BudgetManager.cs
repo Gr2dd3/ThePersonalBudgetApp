@@ -64,7 +64,7 @@ public class BudgetManager : IBudgetManager
         {
             try
             {
-                // Try fetching only id from db?
+                // TODO: Try fetching only id from db?
                 Budget? existingBudget = await GetBudgetByIdAsync(budget.Id, context);
 
                 if (existingBudget != null && existingBudget.Id != Guid.Empty)
@@ -254,6 +254,7 @@ public class BudgetManager : IBudgetManager
         {
 
             return await context.Budgets!
+                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Id == budgetId);
         }
         catch (Exception ex)
@@ -288,14 +289,15 @@ public class BudgetManager : IBudgetManager
         {
             try
             {
-                context.Entry(existingBudget).CurrentValues.SetValues(updatedBudget);
+                context.Entry(existingBudget).State = EntityState.Detached;
+                context.Budgets.Update(updatedBudget);
 
                 await UpdateCategoriesWithItemsAsync(updatedBudget.Categories!, existingBudget.Categories!, updatedBudget.Id, context);
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
-            //Error here. Why?
+            // TODO: Error here. Logic error when adding category
             catch
             {
                 await transaction.RollbackAsync();
@@ -331,11 +333,12 @@ public class BudgetManager : IBudgetManager
 
         foreach (var updatedCategory in updatedCategories)
         {
+            //TODO: Error traces here
             var existingCategory = existingCategories.FirstOrDefault(c => c.Id == updatedCategory.Id);
 
             if (existingCategory != null)
             {
-                await UpdateExistingCategoryWithItemsAsync(updatedCategory, existingCategory, context);
+                UpdateExistingCategoryWithItems(updatedCategory, existingCategory, context);
             }
             else
             {
@@ -345,33 +348,46 @@ public class BudgetManager : IBudgetManager
         }
     }
 
-    private async Task UpdateExistingCategoryWithItemsAsync(Category updatedCategory, Category existingCategory, BudgetDbContext context)
+    private void UpdateExistingCategoryWithItems(Category updatedCategory, Category existingCategory, BudgetDbContext context)
     {
+        if (context.Entry(existingCategory).State == EntityState.Detached)
+        {
+            context.Attach(existingCategory);
+        }
+
         context.Entry(existingCategory).CurrentValues.SetValues(updatedCategory);
 
-        foreach (var updatedItem in updatedCategory.Items!)
+        var updatedItems = updatedCategory.Items!.ToList();
+
+        foreach (var updatedItem in updatedItems)
         {
             var existingItem = existingCategory.Items!.FirstOrDefault(i => i.Id == updatedItem.Id);
 
             if (existingItem != null)
             {
+                if (context.Entry(existingItem).State == EntityState.Detached)
+                {
+                    context.Attach(existingItem);
+                }
                 context.Entry(existingItem).CurrentValues.SetValues(updatedItem);
             }
             else
             {
                 updatedItem.CategoryId = updatedCategory.Id;
-                await context.Items.AddAsync(updatedItem);
+                context.Items.Attach(updatedItem);
+                context.Entry(updatedItem).State = EntityState.Added;
             }
         }
 
         foreach (var existingItem in existingCategory.Items!.ToList())
         {
-            if (!updatedCategory.Items!.Any(i => i.Id == existingItem.Id))
+            if (!updatedItems.Any(i => i.Id == existingItem.Id))
             {
                 context.Items.Remove(existingItem);
             }
         }
     }
+
 
     private async Task AddNewCategoryWithItemsAsync(Category newCategory, BudgetDbContext context)
     {

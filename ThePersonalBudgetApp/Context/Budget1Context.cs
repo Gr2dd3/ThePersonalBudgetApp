@@ -16,7 +16,7 @@ public class BudgetDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            // Load connection string from appsettings.json
+            // TODO: Load connection string from appsettings.json
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
@@ -30,7 +30,7 @@ public class BudgetDbContext : DbContext
                     sqlOptions.CommandTimeout(60);
                 })
                 .EnableSensitiveDataLogging()
-                .EnableDetailedErrors(); // Remove in production
+                .EnableDetailedErrors(); // TODO: Remove in production
         }
     }
 

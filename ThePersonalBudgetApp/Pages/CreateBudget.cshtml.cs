@@ -65,7 +65,7 @@ public class CreateBudgetModel : PageModel, IBudgetHandler
         }
         #endregion
 
-        // TODO: Check item fieldName 'Amount' and 'New Item'?
+        //TODO: Check item fieldName 'Amount' and 'New Item'?
         if (itemId != Guid.Empty)
         {
             float itemAmount = 0;
